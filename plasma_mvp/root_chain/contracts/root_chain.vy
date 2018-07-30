@@ -3,6 +3,26 @@ ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _toke
 BlockSubmitted: event({_root: bytes32, _timestamp: timestamp})
 TokenAdded: event({_token: address})
 
+exits: {
+    owner: address,
+    token: address,
+    amount: uint256
+}[uint256]
+
+childChain: {
+    root: bytes32,
+    timestamp: timestamp
+}[uint256]
+
+exitsQueues: address[address]
+
+# TODO: how to define constant variable
+# uint256 public constant CHILD_BLOCK_INTERVAL = 1000;
+
+operator: address
+currentChildBlock: uint256
+currentDepositBlock: uint256
+currentFeeExit: uint256
 
 # @dev Constructor
 def __init__():
