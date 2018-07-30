@@ -47,8 +47,18 @@ def __init__(_priorityQueue: address):
 
 # @dev Allows Plasma chain operator to submit block root.
 def submitBlock(_root: bytes32):
+    # Only operator can execute.
     assert msg.sender == self.operator
-    self.childChain[]
+    self.childChain[currentChildBlock] = {
+        root: _root,
+        timestamp: block.timestamp
+    }
+
+    # Update block numbers.
+    self.currentChildBlock += CHILD_BLOCK_INTERVAL
+    self.currentDepositBlock = 1
+    
+    log.BlockSubmitted(_root, block.timestamp) 
 
 # @dev Allows anyone to deposit funds into the Plasma chain.
 def deposit():
