@@ -24,15 +24,21 @@ currentChildBlock: uint256
 currentDepositBlock: uint256
 currentFeeExit: uint256
 
+# specify priorityQueue contract address
+priorityQueue: address
+
 # @dev Constructor
-def __init__():
+@public
+def __init__(_priorityQueue: address):
     self.operator = msg.sender
     self.currentChildBlock = CHILD_BLOCK_INTERVAL
     self.currentDepositBlock = 1
     self.currentFeeExit = 1
 
-    # TODO: how to create contract inline
-    # exitsQueues[ZERO_ADDRESS] = create_with_code_of(priorityQueue)
+    # TODO: how to create new contract inline, specifying deployed contract address now.
+    # ZERO_ADDRESS means support only ETH.
+    exitsQueues[ZERO_ADDRESS] = create_with_code_of(_priorityQueue)
+
 
 #
 # Public Functions
