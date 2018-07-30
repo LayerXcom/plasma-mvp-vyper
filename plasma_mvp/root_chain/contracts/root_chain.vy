@@ -4,7 +4,6 @@ BlockSubmitted: event({_root: bytes32, _timestamp: timestamp})
 TokenAdded: event({_token: address})
 
 
-
 # @dev Constructor
 def __init__():
 
