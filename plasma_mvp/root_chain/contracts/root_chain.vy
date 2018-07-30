@@ -36,9 +36,9 @@ def __init__(_priorityQueue: address):
     self.currentFeeExit = 1
 
     # TODO: how to create new contract inline, specifying deployed contract address now.
-    # ZERO_ADDRESS means support only ETH.
+    # ZERO_ADDRESS means currently support only ETH.
     # Be careful, create_with_code_of doesn't support executing constructor.
-    exitsQueues[ZERO_ADDRESS] = create_with_code_of(_priorityQueue)
+    self.exitsQueues[ZERO_ADDRESS] = create_with_code_of(_priorityQueue)
 
 
 #
