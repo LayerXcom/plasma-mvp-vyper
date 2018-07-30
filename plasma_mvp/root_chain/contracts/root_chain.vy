@@ -26,7 +26,13 @@ currentFeeExit: uint256
 
 # @dev Constructor
 def __init__():
+    self.operator = msg.sender
+    self.currentChildBlock = 1000
+    self.currentDepositBlock = 1
+    self.currentFeeExit = 1
 
+    # TODO: how to create contract inline
+    # exitsQueues[ZERO_ADDRESS] = create_with_code_of(priorityQueue)
 
 #
 # Public Functions
