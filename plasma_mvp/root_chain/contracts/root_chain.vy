@@ -63,7 +63,21 @@ def submitBlock(_root: bytes32):
     log.BlockSubmitted(_root, block.timestamp) 
 
 # @dev Allows anyone to deposit funds into the Plasma chain.
+@public
+@payable
 def deposit():
+    assert self.currentDepositBlock < CHILD_BLOCK_INTERVAL
+    
+    root: bytes32 = sha3(msg.sender, ZERO_ADDRESS, msg.value)
+    depositBlock: uint256 = getDepositBlock()
+
+    self.childChain[depositBlock] = {
+        root: root,
+        timestamp: block.timestamp
+    }
+    self.currentDepositBlock += 1
+
+    log.Deposit(msg.sender, depositBlock, ZERO_ADDRESS, msg.value)
 
 # @dev Starts an exit from a deposit
 def startDepositExit():
