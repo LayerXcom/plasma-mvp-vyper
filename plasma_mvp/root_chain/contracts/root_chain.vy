@@ -16,8 +16,8 @@ childChain: {
 
 exitsQueues: address[address]
 
-# TODO: how to define constant variable
-# uint256 public constant CHILD_BLOCK_INTERVAL = 1000;
+# TODO: how to set default value? maybe correct.
+CHILD_BLOCK_INTERVAL: uint256 = 1000
 
 operator: address
 currentChildBlock: uint256
@@ -27,7 +27,7 @@ currentFeeExit: uint256
 # @dev Constructor
 def __init__():
     self.operator = msg.sender
-    self.currentChildBlock = 1000
+    self.currentChildBlock = CHILD_BLOCK_INTERVAL
     self.currentDepositBlock = 1
     self.currentFeeExit = 1
 
