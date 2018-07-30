@@ -12,7 +12,9 @@ def __init__():
 #
 
 # @dev Allows Plasma chain operator to submit block root.
-def submitBlock():
+def submitBlock(_root: bytes32):
+    assert msg.sender == self.operator
+    self.childChain[]
 
 # @dev Allows anyone to deposit funds into the Plasma chain.
 def deposit():
