@@ -1,10 +1,44 @@
+Deposit: event({_depositor: indexed(address), _depositBlock: indexed(uint256), _token: address, _amount: uint256})
+ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _token: address, _amount: uint256})
+BlockSubmitted: event({_root: bytes32, _timestamp: timestamp})
+TokenAdded: event({_token: address})
 
+exits: {
+    owner: address,
+    token: address,
+    amount: uint256
+}[uint256]
 
+childChain: {
+    root: bytes32,
+    timestamp: timestamp
+}[uint256]
 
+exitsQueues: address[address]
 
+# TODO: how to set default value? maybe correct.
+CHILD_BLOCK_INTERVAL: uint256 = 1000
+
+operator: address
+currentChildBlock: uint256
+currentDepositBlock: uint256
+currentFeeExit: uint256
+
+# specify priorityQueue contract address
+priorityQueue: address
 
 # @dev Constructor
-def __init__():
+@public
+def __init__(_priorityQueue: address):
+    self.operator = msg.sender
+    self.currentChildBlock = CHILD_BLOCK_INTERVAL
+    self.currentDepositBlock = 1
+    self.currentFeeExit = 1
+
+    # TODO: how to create new contract inline, specifying deployed contract address now.
+    # ZERO_ADDRESS means currently support only ETH.
+    # Be careful, create_with_code_of doesn't support executing constructor.
+    self.exitsQueues[ZERO_ADDRESS] = create_with_code_of(_priorityQueue)
 
 
 #
