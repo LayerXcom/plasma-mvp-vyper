@@ -42,3 +42,18 @@ def delMin() -> uint256:
     self.percDown(1)
     
     return retVal
+
+@private
+def percUp(_i: uint256):
+    j: uint256 = _i
+    newVal: uint256 = self.heapList[int128(_i)]
+    while newVal < self.heapList[int128(_i / 2)]:
+        self.heapList[int128(_i)] = self.heapList[int128(_i / 2)]
+        _i /= 2
+
+    if _i != j:
+        self.heapList[_i] = newVal
+
+
+@private
+def percDown(_i: uint256):
