@@ -4,8 +4,8 @@ currentSize: uint256
 
 @public
 def __init__():
-    self.owner = msg.sender
-    self.heapList = [0]
+    self.owner = msg.sender    
+    self.heapList = [0] # correct syntax?
     self.currentSize = 0
 
 @public
@@ -47,7 +47,7 @@ def delMin() -> uint256:
 def percUp(_i: uint256):
     j: uint256 = _i
     newVal: uint256 = self.heapList[int128(_i)]
-    while newVal < self.heapList[int128(_i / 2)]:
+    while newVal < self.heapList[int128(_i / 2)]:   # correct syntax?
         self.heapList[int128(_i)] = self.heapList[int128(_i / 2)]
         _i /= 2
 
@@ -57,3 +57,13 @@ def percUp(_i: uint256):
 
 @private
 def percDown(_i: uint256):
+    j: uint256 = _i
+    newVal: uint256 = self.heapList[int128(_i)]
+    mc: uint256 = self.minChild(_i)
+    while mc <= self.currentSize and newVal > self.heapList[int128(mc)]:    # correct syntax?
+        self.heapList[int128(_i)] = self.heapList[int128(mc)]
+        _i = mc
+        mc = self.minChild(_i)
+
+    if _i != j:
+        self.heapList[int128(_i)] = newVal
