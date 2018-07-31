@@ -25,3 +25,9 @@ def minChild(_i: uint256) -> uint256:
             return i * 2
         else:
             return i * 2 + 1
+
+@public
+@constant
+def getMin() -> uint256:
+    return self.heapList[1]
+
