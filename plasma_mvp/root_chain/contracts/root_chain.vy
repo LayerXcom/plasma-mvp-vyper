@@ -1,3 +1,6 @@
+contract PriorityQueue():
+    def setup() -> bool: modifying
+
 Deposit: event({_depositor: indexed(address), _depositBlock: indexed(uint256), _token: address, _amount: uint256})
 ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _token: address, _amount: uint256})
 BlockSubmitted: event({_root: bytes32, _timestamp: timestamp})
@@ -18,28 +21,29 @@ exitsQueues: address[address]
 
 # TODO: how to set default value? maybe correct.
 CHILD_BLOCK_INTERVAL: uint256 = 1000
+ETH_ADDRESS: address = ZERO_ADDRESS
 
 operator: address
 currentChildBlock: uint256
 currentDepositBlock: uint256
 currentFeeExit: uint256
 
-# specify priorityQueue contract address
-priorityQueue: address
 
 # @dev Constructor
 @public
-def __init__(_priorityQueue: address):
+def __init__(_priorityQueueTemplate: address):
+    assert _priorityQueueTemplate != ZERO_ADDRESS
     self.operator = msg.sender
     self.currentChildBlock = CHILD_BLOCK_INTERVAL
     self.currentDepositBlock = 1
-    self.currentFeeExit = 1
+    self.currentFeeExit = 1    
 
-    # TODO: how to create new contract inline, specifying deployed contract address now.
-    # ZERO_ADDRESS means currently support only ETH.
-    # Be careful, create_with_code_of doesn't support executing constructor.
-    self.exitsQueues[ZERO_ADDRESS] = create_with_code_of(_priorityQueue)
-
+    # Be careful, create_with_code_of currently doesn't support executing constructor.
+    priorityQueue: address = create_with_code_of(_priorityQueueTemplate)    
+    # Force executing as a constructor
+    assert PriorityQueue(priorityQueue).setup()
+    # ETH_ADDRESS means currently support only ETH.
+    self.exitsQueues[ETH_ADDRESS] = priorityQueue
 
 #
 # Public Functions
