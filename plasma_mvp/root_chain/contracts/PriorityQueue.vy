@@ -5,7 +5,6 @@ currentSize: uint256
 #@public
 #def __init__():
 #    self.owner = msg.sender    
-#    self.heapList = [0] # correct syntax?
 #    self.currentSize = 0
 
 # Temporary solution for constructor, 
@@ -13,7 +12,6 @@ currentSize: uint256
 @public
 def setup() -> bool:
     self.owner = msg.sender
-    self.heapList = [0]
     self.currentSize = 0
     return True
 
