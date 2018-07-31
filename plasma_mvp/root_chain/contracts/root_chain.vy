@@ -97,8 +97,11 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
 
     log.addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].timestamp)
 
-# dev Allows the operator withdraw any allotted fees. Starts an exit to avoid theft.
-def startFeeExit():
+# @dev Allows the operator withdraw any allotted fees. Starts an exit to avoid theft.
+@public
+def startFeeExit(_token: address, _amount: uint256):
+    assert msg.sender == self.operator
+    
 
 # @dev Starts to exit a specified utxo.
 def startExit():
