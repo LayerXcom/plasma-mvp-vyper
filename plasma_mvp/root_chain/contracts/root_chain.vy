@@ -81,7 +81,21 @@ def deposit():
     log.Deposit(msg.sender, depositBlock, ETH_ADDRESS, msg.value)
 
 # @dev Starts an exit from a deposit
-def startDepositExit():
+# @param _depositPos UTXO position of the deposit
+# @param _token Token type to deposit
+# @param _amount Deposit amount
+@public
+def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
+    blknum: uint256 = _depositPos / 1000000000
+    # Check that the given UTXO is a deposit
+    assert blknum % CHILD_BLOCK_INTERVAL != 0
+
+    root: bytes32 = self.childChain[blknum].root
+    depositHash: bytes32 = sha3(msg.sender, _token, _amount)
+    # Check that the block root of the UTXO position is same as depositHash.
+    assert root == depositHash
+
+    log.addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].timestamp)
 
 # dev Allows the operator withdraw any allotted fees. Starts an exit to avoid theft.
 def startFeeExit():
