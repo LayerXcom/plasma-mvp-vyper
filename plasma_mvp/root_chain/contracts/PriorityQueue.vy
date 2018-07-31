@@ -2,11 +2,20 @@ owner: address
 heapList: uint256[int128]
 currentSize: uint256
 
+#@public
+#def __init__():
+#    self.owner = msg.sender    
+#    self.heapList = [0] # correct syntax?
+#    self.currentSize = 0
+
+# Temporary solution for constructor, 
+# look at https://github.com/ethereum/vyper/issues/773#issuecomment-383714363
 @public
-def __init__():
-    self.owner = msg.sender    
-    self.heapList = [0] # correct syntax?
+def setup() -> bool:
+    self.owner = msg.sender
+    self.heapList = [0]
     self.currentSize = 0
+    return True
 
 @public
 def insert(_k: uint256):
