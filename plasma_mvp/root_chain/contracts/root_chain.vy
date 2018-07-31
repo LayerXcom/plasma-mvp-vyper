@@ -69,7 +69,7 @@ def submitBlock(_root: bytes32):
 def deposit():
     assert self.currentDepositBlock < CHILD_BLOCK_INTERVAL
     
-    root: bytes32 = sha3(msg.sender, ZERO_ADDRESS, msg.value)
+    root: bytes32 = sha3(msg.sender, ETH_ADDRESS, msg.value)
     depositBlock: uint256 = getDepositBlock()
 
     self.childChain[depositBlock] = {
@@ -78,7 +78,7 @@ def deposit():
     }
     self.currentDepositBlock += 1
 
-    log.Deposit(msg.sender, depositBlock, ZERO_ADDRESS, msg.value)
+    log.Deposit(msg.sender, depositBlock, ETH_ADDRESS, msg.value)
 
 # @dev Starts an exit from a deposit
 def startDepositExit():
@@ -104,7 +104,11 @@ def finalizeExits():
 def getChildChain():
 
 # @dev Determines the next deposit block number.
-def getDepositBlock():
+# @return Block number to be given to the next deposit block.
+@public
+@constant
+def getDepositBlock() -> uint256:
+    return self.currentChildBlock - CHILD_BLOCK_INTERVAL + self.currentDepositBlock
 
 # @dev Returns information about an exit.
 def getExit():
