@@ -18,6 +18,7 @@ exitsQueues: address[address]
 
 # TODO: how to set default value? maybe correct.
 CHILD_BLOCK_INTERVAL: uint256 = 1000
+ETH_ADDRESS: address = ZERO_ADDRESS
 
 operator: address
 currentChildBlock: uint256
@@ -36,9 +37,9 @@ def __init__(_priorityQueue: address):
     self.currentFeeExit = 1
 
     # TODO: how to create new contract inline, specifying deployed contract address now.
-    # ZERO_ADDRESS means currently support only ETH.
+    # ETH_ADDRESS means currently support only ETH.
     # Be careful, create_with_code_of doesn't support executing constructor.
-    self.exitsQueues[ZERO_ADDRESS] = create_with_code_of(_priorityQueue)
+    self.exitsQueues[ETH_ADDRESS] = create_with_code_of(_priorityQueue)
 
 
 #
