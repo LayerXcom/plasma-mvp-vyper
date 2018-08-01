@@ -112,7 +112,19 @@ def startFeeExit(_token: address, _amount: uint256):
     
 
 # @dev Starts to exit a specified utxo.
-def startExit():
+@public
+def startExit(_utxoPos: uint256, _tyBytes: bytes, _proof: bytes, _sigs: bytes):
+    blknum: uint256 = _utxoPos / 1000000000
+    txindex: uint256 = (_utxoPos % 1000000000) / 10000
+    oindex: uint256 = _utxoPos - blknum * 1000000000 - txindex * 10000
+
+    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
+    txList: [13] = RLPList(_txBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
+    assert msg.sender == txList[7 + oindex * 2]
+
+    root: bytes32 = self.childChain[blknum].root
+    merkleHash: bytes32 = sha3(sha3(_txBytes), slice(_sigs, 0, 130))
+    assert 
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 def challengeExit():
@@ -167,3 +179,44 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
         amount: _amount
     }
     log.ExitStarted(msg.sender, _utxoPos, _token, _amount)
+
+
+#
+# Library
+#
+
+@private
+@constant
+def createExitingTx(_exitingTxBytes: bytes, _oindex: uint256):
+
+
+@private
+@constant
+def validate(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes) -> bool:
+    assert len(_sigs) % 65 == 0 and len(_sigs) <= 260
+    sig1: bytes = slice(_sigs, 0, 65)
+    sig2: bytes = slice(_sigs, 65, 65)
+    confSig1: bytes = slice(_sigs, 130, 65)
+    confirmationHash: bytes32 = sha3(_txHash, _rootHash)
+
+    check1: bool = true
+    check2: bool = true
+
+    check1 = self.ecrecoverSig(_txhash, sig1) == self.ecrecoverSig(confirmationHash, confSig1)
+    if _blknum2 > 0:
+        confSig2: bytes = slice(_sigs, 195, 65)
+        check2 = self.ecrecoverSig(_txHash, sig2) == self.ecrecoverSig(confirmationHash, confSig2)
+
+    return check1 and check2
+
+
+@private
+@constant
+def ecrecoverSig(_txHash: bytes32, _sig: bytes) -> address:
+    assert len(_sig) == 65
+    # Perhaps convert() can only convert 'bytes' to 'int128', so in that case here should be fixed.
+    r: uint256 = convert(slice(_sig, 0, 32), uint256)
+    s: uint256 = convert(slice(_sig, 32, 32), uint256)
+    v: uint256 = convert(slice(_sig, 64, 1), uint256)
+
+    return ecrecover(_txHash, v, r, s)
