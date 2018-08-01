@@ -1,6 +1,7 @@
 contract PriorityQueue():
     def setup() -> bool: modifying
     def insert(_k: uint256) -> bool: modifying 
+    def getMin() -> uint256: constant
 
 Deposit: event({_depositor: indexed(address), _depositBlock: indexed(uint256), _token: address, _amount: uint256})
 ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _token: address, _amount: uint256})
@@ -185,8 +186,10 @@ def getExit(_utxoPos: uint256) -> (address, address, uint256):
 @public
 @constant
 def getNextExit(_token: address) -> (uint256, uint256):
-    priority: uint256 = 
-
+    priority: uint256 = PriorityQueue(self.exitsQueues[_token]).getMin()
+    utxoPos: uint256 = uint256(int128(priority))
+    exitable_at: uint256 = shift(priority, 128)
+    return (utxoPos, exitable_at)
 
 #
 # Private functions
