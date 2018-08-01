@@ -1,3 +1,7 @@
+contract PriorityQueue():
+    def setup() -> bool: modifying
+    def insert(_k: uint256) -> bool: modifying 
+
 Deposit: event({_depositor: indexed(address), _depositBlock: indexed(uint256), _token: address, _amount: uint256})
 ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _token: address, _amount: uint256})
 BlockSubmitted: event({_root: bytes32, _timestamp: timestamp})
@@ -25,22 +29,22 @@ currentChildBlock: uint256
 currentDepositBlock: uint256
 currentFeeExit: uint256
 
-# specify priorityQueue contract address
-priorityQueue: address
 
 # @dev Constructor
 @public
-def __init__(_priorityQueue: address):
+def __init__(_priorityQueueTemplate: address):
+    assert _priorityQueueTemplate != ZERO_ADDRESS
     self.operator = msg.sender
     self.currentChildBlock = CHILD_BLOCK_INTERVAL
     self.currentDepositBlock = 1
-    self.currentFeeExit = 1
+    self.currentFeeExit = 1    
 
-    # TODO: how to create new contract inline, specifying deployed contract address now.
+    # Be careful, create_with_code_of currently doesn't support executing constructor.
+    priorityQueue: address = create_with_code_of(_priorityQueueTemplate)    
+    # Force executing as a constructor
+    assert PriorityQueue(priorityQueue).setup()
     # ETH_ADDRESS means currently support only ETH.
-    # Be careful, create_with_code_of doesn't support executing constructor.
-    self.exitsQueues[ETH_ADDRESS] = create_with_code_of(_priorityQueue)
-
+    self.exitsQueues[ETH_ADDRESS] = priorityQueue
 
 #
 # Public Functions
@@ -95,7 +99,7 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
     # Check that the block root of the UTXO position is same as depositHash.
     assert root == depositHash
 
-    log.addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].timestamp)
+    self.addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].timestamp)
 
 # @dev Allows the operator withdraw any allotted fees. Starts an exit to avoid theft.
 @public
@@ -139,4 +143,23 @@ def getNextExit():
 #
 
 # @dev Adds an exit to the exit queue.
-def addExitToQueue():
+@private
+def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: uint256):
+    assert self.exitsQueues[_token] != ZERO_ADDRESS
+
+    # Maximum _created_at + 2 weeks or block.timestamp + 1 week
+    exitable_at: int128 = max(int128(_created_at) + 2 * 7 * 24 * 60 * 60, int128(block.timestamp) + 1 * 7 * 24 * 60 * 60)
+    # "priority" represents priority of　exitable_at over utxo position. 
+    priority: uint256 = bitwise_or(shift(uint256(exitable_at), 128), _utxoPos)
+
+    assert _amount > 0
+    assert self.exits[_utxoPos].amount == 0
+
+    assert PriorityQueue(self.exitsQueues[ETH_ADDRESS]).insert(priority)
+
+    self.exits[_utxoPos] = {
+        owner: _exitor,
+        token: _token,
+        amount: _amount
+    }
+    log.ExitStarted(msg.sender, _utxoPos, _token, _amount)
