@@ -120,18 +120,21 @@ def startFeeExit(_token: address, _amount: uint256):
 
 # @dev Starts to exit a specified utxo.
 @public
-def startExit(_utxoPos: uint256, _tyBytes: bytes, _proof: bytes, _sigs: bytes):
+def startExit(_utxoPos: uint256, _txBytes: bytes, _proof: bytes, _sigs: bytes):
     blknum: uint256 = _utxoPos / 1000000000
     txindex: uint256 = (_utxoPos % 1000000000) / 10000
     oindex: uint256 = _utxoPos - blknum * 1000000000 - txindex * 10000
 
-    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
-    txList: [13] = RLPList(_txBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
-    assert msg.sender == txList[7 + oindex * 2]
+    exitingTx: exitingTx = self.createExitingTx(_txBytes, oindex)
+    assert msg.sender == exitingTx.exitor
 
     root: bytes32 = self.childChain[blknum].root
     merkleHash: bytes32 = sha3(sha3(_txBytes), slice(_sigs, 0, 130))
-    assert self.checkSigs(sha3(_txBytes), root, )
+
+    assert self.checkSigs(sha3(_txBytes), root, exitingTx.inputCount, _sigs)
+    assert self.checkMembership(txindex, root, _proof)
+
+    self.addExitToQueue(_utxoPos, exitingTx.exitor, exitingTx.token, exitingTx.amount, childChain[blknum].timestamp)
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 def challengeExit():
@@ -194,8 +197,15 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
 
 @private
 @constant
-def createExitingTx(_exitingTxBytes: bytes, _oindex: uint256):
-
+def createExitingTx(_exitingTxBytes: bytes, _oindex: uint256) -> exitingTx:
+    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
+    txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
+    return exitingTx({
+        exitor: txList[7 + _oindex * 2]
+        token: txList[6]
+        amount: txList[8 + _oindex * 2]
+        inputCount: txList[0] * txList[3]
+    })
 
 @private
 @constant
@@ -227,3 +237,21 @@ def ecrecoverSig(_txHash: bytes32, _sig: bytes) -> address:
     v: uint256 = convert(slice(_sig, 64, 1), uint256)
 
     return ecrecover(_txHash, v, r, s)
+
+@private
+@constant
+def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes) -> bool:
+    assert len(_proof) == 512
+    proofElement: bytes32
+    computedHash: bytes32 = _leaf
+
+    # 16 = len(_proof) / 32
+    for i in range(16):
+        proofElement = slice(_proof, i * 32, 32)
+        if _index % 2 == 0:
+            computedHash = sha3(computedHash, ploofElement)
+        else:
+            computedHash = sha3(proofElement, computedHash)
+        _index = _index / 2
+    
+    return computedHash == _rootHash
