@@ -35,7 +35,7 @@ currentFeeExit: uint256
 def __init__(_priorityQueueTemplate: address):
     assert _priorityQueueTemplate != ZERO_ADDRESS
     self.operator = msg.sender
-    self.currentChildBlock = CHILD_BLOCK_INTERVAL
+    self.currentChildBlock = self.CHILD_BLOCK_INTERVAL
     self.currentDepositBlock = 1
     self.currentFeeExit = 1    
 
@@ -44,7 +44,7 @@ def __init__(_priorityQueueTemplate: address):
     # Force executing as a constructor
     assert PriorityQueue(priorityQueue).setup()
     # ETH_ADDRESS means currently support only ETH.
-    self.exitsQueues[ETH_ADDRESS] = priorityQueue
+    self.exitsQueues[self.ETH_ADDRESS] = priorityQueue
 
 #
 # Public Functions
@@ -62,7 +62,7 @@ def submitBlock(_root: bytes32):
     }
 
     # Update block numbers.
-    self.currentChildBlock += CHILD_BLOCK_INTERVAL
+    self.currentChildBlock += self.CHILD_BLOCK_INTERVAL
     self.currentDepositBlock = 1
 
     log.BlockSubmitted(_root, block.timestamp) 
@@ -71,9 +71,9 @@ def submitBlock(_root: bytes32):
 @public
 @payable
 def deposit():
-    assert self.currentDepositBlock < CHILD_BLOCK_INTERVAL
+    assert self.currentDepositBlock < self.CHILD_BLOCK_INTERVAL
     
-    root: bytes32 = sha3(msg.sender, ETH_ADDRESS, msg.value)
+    root: bytes32 = sha3(msg.sender, self.ETH_ADDRESS, msg.value)
     depositBlock: uint256 = getDepositBlock()
 
     self.childChain[depositBlock] = {
@@ -82,7 +82,7 @@ def deposit():
     }
     self.currentDepositBlock += 1
 
-    log.Deposit(msg.sender, depositBlock, ETH_ADDRESS, msg.value)
+    log.Deposit(msg.sender, depositBlock, self.ETH_ADDRESS, msg.value)
 
 # @dev Starts an exit from a deposit
 # @param _depositPos UTXO position of the deposit
@@ -92,7 +92,7 @@ def deposit():
 def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
     blknum: uint256 = _depositPos / 1000000000
     # Check that the given UTXO is a deposit
-    assert blknum % CHILD_BLOCK_INTERVAL != 0
+    assert blknum % self.CHILD_BLOCK_INTERVAL != 0
 
     root: bytes32 = self.childChain[blknum].root
     depositHash: bytes32 = sha3(msg.sender, _token, _amount)
@@ -102,9 +102,13 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
     self.addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].timestamp)
 
 # @dev Allows the operator withdraw any allotted fees. Starts an exit to avoid theft.
+# @param _token Token to withdraw.
+# @param _amount Amount in fees to withdraw.
 @public
 def startFeeExit(_token: address, _amount: uint256):
     assert msg.sender == self.operator
+    self.addExitToQueue(self.currentFeeExit, msg.sender, _token, _amount, block.timestamp)
+    self.currentFeeExit += 1
     
 
 # @dev Starts to exit a specified utxo.
@@ -129,7 +133,7 @@ def getChildChain():
 @public
 @constant
 def getDepositBlock() -> uint256:
-    return self.currentChildBlock - CHILD_BLOCK_INTERVAL + self.currentDepositBlock
+    return self.currentChildBlock - self.CHILD_BLOCK_INTERVAL + self.currentDepositBlock
 
 # @dev Returns information about an exit.
 def getExit():
@@ -155,7 +159,7 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
     assert _amount > 0
     assert self.exits[_utxoPos].amount == 0
 
-    assert PriorityQueue(self.exitsQueues[ETH_ADDRESS]).insert(priority)
+    assert PriorityQueue(self.exitsQueues[self.ETH_ADDRESS]).insert(priority)
 
     self.exits[_utxoPos] = {
         owner: _exitor,
