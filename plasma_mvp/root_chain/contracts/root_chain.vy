@@ -81,7 +81,13 @@ def submitBlock(_root: bytes32):
 def deposit():
     assert self.currentDepositBlock < self.CHILD_BLOCK_INTERVAL
     
-    root: bytes32 = sha3(msg.sender, self.ETH_ADDRESS, msg.value)
+    root: bytes32 = sha3(
+                        concat(
+                            convert(msg.sender, "bytes32"),
+                            convert(self.ETH_ADDRESS, "bytes32"),
+                            convert(msg.value, "bytes32")
+                        )
+    )                
     depositBlock: uint256 = getDepositBlock()
 
     self.childChain[depositBlock] = {
@@ -103,7 +109,13 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
     assert blknum % self.CHILD_BLOCK_INTERVAL != 0
 
     root: bytes32 = self.childChain[blknum].root
-    depositHash: bytes32 = sha3(msg.sender, _token, _amount)
+    depositHash: bytes32 = sha3(
+                                concat(
+                                    convert(msg.sender, "bytes32"),
+                                    convert(_token, "bytes32"),
+                                    convert(_amount, "bytes32")
+                                )
+    )
     # Check that the block root of the UTXO position is same as depositHash.
     assert root == depositHash
 
@@ -130,7 +142,12 @@ def startExit(_utxoPos: uint256, _txBytes: bytes, _proof: bytes, _sigs: bytes):
     assert msg.sender == exitingTx.exitor
 
     root: bytes32 = self.childChain[blknum].root
-    merkleHash: bytes32 = sha3(sha3(_txBytes), slice(_sigs, 0, 130))
+    merkleHash: bytes32 = sha3(
+                            concat(
+                                sha3(_txBytes),
+                                slice(_sigs, 0, 130)
+                            )
+    )
 
     assert self.checkSigs(sha3(_txBytes), root, exitingTx.inputCount, _sigs)
     assert self.checkMembership(txindex, root, _proof)
@@ -145,8 +162,8 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes, _pr
     root: bytes32 = self.childChain[_cUtxoPos / 1000000000].root
 
     txHash: bytes32 = sha3(_txBytes)
-    confirmationHash: bytes32 = sha3(txHash, root)
-    merkleHash: bytes32 = sha3(txHash, _sigs)
+    confirmationHash: bytes32 = sha3(concat(txHash, root))
+    merkleHash: bytes32 = sha3(concat(txHash, _sigs))
     owner: address = self.exits[eUtxoPos].owner
     
     assert owner == self.checkSigs(confirmationHash, _confirmationSig)
@@ -249,7 +266,7 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
     sig1: bytes = slice(_sigs, 0, 65)
     sig2: bytes = slice(_sigs, 65, 65)
     confSig1: bytes = slice(_sigs, 130, 65)
-    confirmationHash: bytes32 = sha3(_txHash, _rootHash)
+    confirmationHash: bytes32 = sha3(concat(_txHash, _rootHash))
 
     check1: bool = true
     check2: bool = true
@@ -284,9 +301,9 @@ def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof:
     for i in range(16):
         proofElement = slice(_proof, i * 32, 32)
         if _index % 2 == 0:
-            computedHash = sha3(computedHash, ploofElement)
+            computedHash = sha3(concat(computedHash, ploofElement))
         else:
-            computedHash = sha3(proofElement, computedHash)
+            computedHash = sha3(concat(proofElement, computedHash))
         _index = _index / 2
     
     return computedHash == _rootHash
