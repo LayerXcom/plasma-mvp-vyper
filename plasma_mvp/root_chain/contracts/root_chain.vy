@@ -1,6 +1,6 @@
 contract PriorityQueue():
     def setup() -> bool: modifying
-    def insert(_k: uint256): modifying 
+    def insert(_k: uint256) -> bool: modifying 
 
 Deposit: event({_depositor: indexed(address), _depositBlock: indexed(uint256), _token: address, _amount: uint256})
 ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _token: address, _amount: uint256})
@@ -152,7 +152,7 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
     assert _amount > 0
     assert self.exits[_utxoPos].amount == 0
 
-    PriorityQueue(self.exitsQueues[ETH_ADDRESS]).insert(priority)
+    assert PriorityQueue(self.exitsQueues[ETH_ADDRESS]).insert(priority)
 
     self.exits[_utxoPos] = {
         owner: _exitor,

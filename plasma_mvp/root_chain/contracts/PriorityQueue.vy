@@ -16,11 +16,12 @@ def setup() -> bool:
     return True
 
 @public
-def insert(_k: uint256):
+def insert(_k: uint256) -> bool:
     assert msg.sender == self.owner
     self.heapList[int128(self.currentSize)] = _k
     self.currentSize += 1
     self.percUp(self.currentSize)
+    return True
 
 @public
 @constant
