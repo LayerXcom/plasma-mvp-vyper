@@ -34,7 +34,7 @@ currentFeeExit: uint256
 def __init__(_priorityQueueTemplate: address):
     assert _priorityQueueTemplate != ZERO_ADDRESS
     self.operator = msg.sender
-    self.currentChildBlock = CHILD_BLOCK_INTERVAL
+    self.currentChildBlock = self.CHILD_BLOCK_INTERVAL
     self.currentDepositBlock = 1
     self.currentFeeExit = 1    
 
@@ -43,7 +43,7 @@ def __init__(_priorityQueueTemplate: address):
     # Force executing as a constructor
     assert PriorityQueue(priorityQueue).setup()
     # ETH_ADDRESS means currently support only ETH.
-    self.exitsQueues[ETH_ADDRESS] = priorityQueue
+    self.exitsQueues[self.ETH_ADDRESS] = priorityQueue
 
 #
 # Public Functions
