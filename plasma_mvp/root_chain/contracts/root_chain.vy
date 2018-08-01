@@ -18,6 +18,13 @@ childChain: {
     timestamp: timestamp
 }[uint256]
 
+exitingTx: {
+    exitor: address,
+    token: address,
+    amount: uint256,
+    inputCount: uint256
+}
+
 exitsQueues: address[address]
 
 # TODO: how to set default value? maybe correct.
@@ -124,7 +131,7 @@ def startExit(_utxoPos: uint256, _tyBytes: bytes, _proof: bytes, _sigs: bytes):
 
     root: bytes32 = self.childChain[blknum].root
     merkleHash: bytes32 = sha3(sha3(_txBytes), slice(_sigs, 0, 130))
-    assert 
+    assert self.checkSigs(sha3(_txBytes), root, )
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 def challengeExit():
@@ -192,7 +199,7 @@ def createExitingTx(_exitingTxBytes: bytes, _oindex: uint256):
 
 @private
 @constant
-def validate(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes) -> bool:
+def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes) -> bool:
     assert len(_sigs) % 65 == 0 and len(_sigs) <= 260
     sig1: bytes = slice(_sigs, 0, 65)
     sig2: bytes = slice(_sigs, 65, 65)
