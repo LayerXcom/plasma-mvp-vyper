@@ -61,7 +61,7 @@ def submitBlock(_root: bytes32):
     }
 
     # Update block numbers.
-    self.currentChildBlock += CHILD_BLOCK_INTERVAL
+    self.currentChildBlock += self.CHILD_BLOCK_INTERVAL
     self.currentDepositBlock = 1
 
     log.BlockSubmitted(_root, block.timestamp) 
