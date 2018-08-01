@@ -1,5 +1,6 @@
 contract PriorityQueue():
     def setup() -> bool: modifying
+    def insert(_k: uint256): modifying 
 
 Deposit: event({_depositor: indexed(address), _depositBlock: indexed(uint256), _token: address, _amount: uint256})
 ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _token: address, _amount: uint256})
@@ -98,7 +99,7 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
     # Check that the block root of the UTXO position is same as depositHash.
     assert root == depositHash
 
-    addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].timestamp)
+    self.addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].timestamp)
 
 # dev Allows the operator withdraw any allotted fees. Starts an exit to avoid theft.
 def startFeeExit():
@@ -143,9 +144,17 @@ def getNextExit():
 def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: uint256):
     assert self.exitsQueues[_token] != ZERO_ADDRESS
 
-    exitable_at: uint256 = max(int128())
+    exitable_at: int128 = max(int128())
+    priority: uint256 = shift(uint256(exitable_at), 128)
 
     assert _amount > 0
     assert self.exits[_utxoPos].amount == 0
 
-    queue: address = 
+    PriorityQueue(self.exitsQueues[ETH_ADDRESS]).insert(priority)
+
+    self.exits[_utxoPos] = {
+        owner: _exitor,
+        token: _token,
+        amount: _amount
+    }
+    log.ExitStarted(msg.sender, _utxoPos, _token, _amount)
