@@ -144,8 +144,10 @@ def getNextExit():
 def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: uint256):
     assert self.exitsQueues[_token] != ZERO_ADDRESS
 
-    exitable_at: int128 = max(int128())
-    priority: uint256 = shift(uint256(exitable_at), 128)
+    # Maximum _created_at + 2 weeks or block.timestamp + 1 week
+    exitable_at: int128 = max(int128(_created_at) + 2 * 7 * 24 * 60 * 60, int128(block.timestamp) + 1 * 7 * 24 * 60 * 60)
+    # "priority" represents priority of　exitable_at over utxo position. 
+    priority: uint256 = bitwise_or(shift(uint256(exitable_at), 128), _utxoPos)
 
     assert _amount > 0
     assert self.exits[_utxoPos].amount == 0
