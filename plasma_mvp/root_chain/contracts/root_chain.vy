@@ -137,7 +137,22 @@ def startExit(_utxoPos: uint256, _txBytes: bytes, _proof: bytes, _sigs: bytes):
     self.addExitToQueue(_utxoPos, exitingTx.exitor, exitingTx.token, exitingTx.amount, childChain[blknum].timestamp)
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
-def challengeExit():
+@public
+def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes, _proof: bytes, _sigs: bytes, _confirmationSig: bytes):
+    eUtxoPos: uint256 = self.getUtxoPos(_txBytes, _eUtxoIndex)
+    txindex: uint256 = (_cUtxoPos % 1000000000) / 10000
+    root: bytes32 = self.childChain[_cUtxoPos / 1000000000].root
+
+    txHash: bytes32 = sha3(_txBytes)
+    confirmationHash: bytes32 = sha3(txHash, root)
+    merkleHash: bytes32 = sha3(txHash, _sigs)
+    owner: address = self.exits[eUtxoPos].owner
+    
+    assert owner == self.checkSigs(confirmationHash, _confirmationSig)
+    assert self.checkMembership(txindex, root, _proof)
+
+    self.exits[eUtxoPos].owner = ZERO_ADDRESS
+
 
 # @dev Processes any exits that have completed the challenge period.
 def finalizeExits():
@@ -148,7 +163,10 @@ def finalizeExits():
 #
 
 # @dev Queries the child chain.
-def getChildChain():
+@public
+@constant
+def getChildChain(_blockNumber: uint256) -> (bytes32, uint256):  # how to return multiple value?
+    return (self.childChain[_blockNumber].root, self.childChain[_blockNumber].timestamp)
 
 # @dev Determines the next deposit block number.
 # @return Block number to be given to the next deposit block.
@@ -158,10 +176,16 @@ def getDepositBlock() -> uint256:
     return self.currentChildBlock - self.CHILD_BLOCK_INTERVAL + self.currentDepositBlock
 
 # @dev Returns information about an exit.
-def getExit():
+@public
+@constant
+def getExit(_utxoPos: uint256) -> (address, address, uint256):
+    return (self.exits[_utxoPos].owner, self.exits[_utxoPos].token, self.exits[_utxoPos].amount)
 
 # @dev Determines the next exit to be processed.
-def getNextExit():
+@public
+@constant
+def getNextExit(_token: address) -> (uint256, uint256):
+    priority: uint256 = 
 
 
 #
@@ -206,6 +230,14 @@ def createExitingTx(_exitingTxBytes: bytes, _oindex: uint256) -> exitingTx:
         amount: txList[8 + _oindex * 2]
         inputCount: txList[0] * txList[3]
     })
+
+@private
+@constant
+def getUtxoPos(_challengingTxBytes: bytes, _oIndex: uint256) -> uint256:
+    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
+    txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
+    oIndexShift: uint256 = _oIndex * 3
+    return txList[0 + oIndexShift] + txList[1 + oIndexShift] + txList[2 + oIndexShift]
 
 @private
 @constant
