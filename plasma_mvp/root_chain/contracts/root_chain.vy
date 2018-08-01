@@ -136,4 +136,13 @@ def getNextExit():
 #
 
 # @dev Adds an exit to the exit queue.
-def addExitToQueue():
+@private
+def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: uint256):
+    assert self.exitsQueues[_token] != ZERO_ADDRESS
+
+    exitable_at: uint256 = max(int128())
+
+    assert _amount > 0
+    assert self.exits[_utxoPos].amount == 0
+
+    queue: address = 
