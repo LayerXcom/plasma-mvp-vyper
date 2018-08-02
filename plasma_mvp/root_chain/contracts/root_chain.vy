@@ -2,6 +2,7 @@ contract PriorityQueue():
     def setup() -> bool: modifying
     def insert(_k: uint256) -> bool: modifying 
     def getMin() -> uint256: constant
+    def delMin() -> uint256: modifying
 
 Deposit: event({_depositor: indexed(address), _depositBlock: indexed(uint256), _token: address, _amount: uint256})
 ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _token: address, _amount: uint256})
@@ -184,12 +185,18 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes, _pr
 
 # @dev Processes any exits that have completed the challenge period.
 @constant
-def finalizeExits(_token: address):
-    utxoPos: uint256
-    exitable_at: uint256
+def finalizeExits(_token: address):   
     nextExitArray: [uint256, uint256] = self.getNextExit(_token)
+    utxoPos: uint256 = nextExitArray[0]
+    exitable_at: uint256 = nextExitArray[1]
 
-    self.currentExit
+    currentExit: Exit = exits[utxoPos]
+    while exitable_at < block.timestamp:
+        currentExit = self.exits[utxoPos]
+        
+        assert _token == ZERO_ADDRESS
+        send(currentExit.owner, currentExit.amount)
+
 
 
 #
@@ -261,9 +268,9 @@ def createExitingTx(_exitingTxBytes: bytes, _oindex: uint256) -> exitingTx:
     # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
     txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
     return ExitingTx({
-        exitor: txList[7 + _oindex * 2]
-        token: txList[6]
-        amount: txList[8 + _oindex * 2]
+        exitor: txList[7 + _oindex * 2],
+        token: txList[6],
+        amount: txList[8 + _oindex * 2],
         inputCount: txList[0] * txList[3]
     })
 
