@@ -8,24 +8,25 @@ ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _toke
 BlockSubmitted: event({_root: bytes32, _timestamp: timestamp})
 TokenAdded: event({_token: address})
 
-exits: {
-    owner: address,
-    token: address,
-    amount: uint256
-}[uint256]
-
 childChain: {
     root: bytes32,
     timestamp: timestamp
 }[uint256]
 
-exitingTx: {
+Exit: {
+    owner: address,
+    token: address,
+    amount: uint256
+}
+
+ExitingTx: {
     exitor: address,
     token: address,
     amount: uint256,
     inputCount: uint256
 }
 
+exits: Exit[uint256]
 exitsQueues: address[address]
 
 # TODO: how to set default value? maybe correct.
@@ -138,7 +139,7 @@ def startExit(_utxoPos: uint256, _txBytes: bytes, _proof: bytes, _sigs: bytes):
     txindex: uint256 = (_utxoPos % 1000000000) / 10000
     oindex: uint256 = _utxoPos - blknum * 1000000000 - txindex * 10000
 
-    exitingTx: exitingTx = self.createExitingTx(_txBytes, oindex)
+    exitingTx: ExitingTx = self.createExitingTx(_txBytes, oindex)
     assert msg.sender == exitingTx.exitor
 
     root: bytes32 = self.childChain[blknum].root
@@ -182,7 +183,13 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes, _pr
 
 
 # @dev Processes any exits that have completed the challenge period.
-def finalizeExits():
+@constant
+def finalizeExits(_token: address):
+    utxoPos: uint256
+    exitable_at: uint256
+    nextExitArray: [uint256, uint256] = self.getNextExit(_token)
+
+    self.currentExit
 
 
 #
@@ -192,8 +199,8 @@ def finalizeExits():
 # @dev Queries the child chain.
 @public
 @constant
-def getChildChain(_blockNumber: uint256) -> (bytes32, uint256):  # how to return multiple value?
-    return (self.childChain[_blockNumber].root, self.childChain[_blockNumber].timestamp)
+def getChildChain(_blockNumber: uint256) -> [bytes32, uint256]:  # how to return multiple value?
+    return [self.childChain[_blockNumber].root, self.childChain[_blockNumber].timestamp]
 
 # @dev Determines the next deposit block number.
 # @return Block number to be given to the next deposit block.
@@ -205,17 +212,17 @@ def getDepositBlock() -> uint256:
 # @dev Returns information about an exit.
 @public
 @constant
-def getExit(_utxoPos: uint256) -> (address, address, uint256):
-    return (self.exits[_utxoPos].owner, self.exits[_utxoPos].token, self.exits[_utxoPos].amount)
+def getExit(_utxoPos: uint256) -> [address, address, uint256]:
+    return [self.exits[_utxoPos].owner, self.exits[_utxoPos].token, self.exits[_utxoPos].amount]
 
 # @dev Determines the next exit to be processed.
 @public
 @constant
-def getNextExit(_token: address) -> (uint256, uint256):
+def getNextExit(_token: address) -> [uint256, uint256]:
     priority: uint256 = PriorityQueue(self.exitsQueues[_token]).getMin()
     utxoPos: uint256 = uint256(int128(priority))
     exitable_at: uint256 = shift(priority, 128)
-    return (utxoPos, exitable_at)
+    return [utxoPos, exitable_at]
 
 #
 # Private functions
@@ -253,7 +260,7 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
 def createExitingTx(_exitingTxBytes: bytes, _oindex: uint256) -> exitingTx:
     # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
     txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
-    return exitingTx({
+    return ExitingTx({
         exitor: txList[7 + _oindex * 2]
         token: txList[6]
         amount: txList[8 + _oindex * 2]
