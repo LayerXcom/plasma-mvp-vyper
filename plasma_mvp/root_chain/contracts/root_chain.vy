@@ -3,6 +3,7 @@ contract PriorityQueue():
     def insert(_k: uint256) -> bool: modifying 
     def getMin() -> uint256: constant
     def delMin() -> uint256: modifying
+    def currentSize() -> uint256: constant
 
 Deposit: event({_depositor: indexed(address), _depositBlock: indexed(uint256), _token: address, _amount: uint256})
 ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _token: address, _amount: uint256})
@@ -194,9 +195,14 @@ def finalizeExits(_token: address):
     while exitable_at < block.timestamp:
         currentExit = self.exits[utxoPos]
         
+        # Allowed only ETH
         assert _token == ZERO_ADDRESS
         send(currentExit.owner, currentExit.amount)
+        PriorityQueue(self.exitsQueues[_token]).delMin()
+        # Delete owner of the utxo
+        self.exits[utxoPos].owner = 0
 
+        if 
 
 
 #
@@ -230,6 +236,7 @@ def getNextExit(_token: address) -> [uint256, uint256]:
     utxoPos: uint256 = uint256(int128(priority))
     exitable_at: uint256 = shift(priority, 128)
     return [utxoPos, exitable_at]
+
 
 #
 # Private functions
