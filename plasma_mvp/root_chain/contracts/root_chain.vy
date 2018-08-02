@@ -185,7 +185,7 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes, _pr
 
 
 # @dev Processes any exits that have completed the challenge period.
-@constant
+@public
 def finalizeExits(_token: address):   
     nextExitArray: [uint256, uint256] = self.getNextExit(_token)
     utxoPos: uint256 = nextExitArray[0]
@@ -197,13 +197,17 @@ def finalizeExits(_token: address):
         
         # Allowed only ETH
         assert _token == ZERO_ADDRESS
+        # Send the token amount of the exiting utxo to the owner of the utxo
         send(currentExit.owner, currentExit.amount)
+        
         PriorityQueue(self.exitsQueues[_token]).delMin()
         # Delete owner of the utxo
         self.exits[utxoPos].owner = 0
 
         if PriorityQueue(self.exitsQueues[_token]).getCurrentSize() > 0:
-            
+            [utxoPos, exitable_at] = self.getNextExit(_token)
+        else:
+            return
 
 
 #
