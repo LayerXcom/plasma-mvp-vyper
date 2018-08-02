@@ -202,7 +202,7 @@ def finalizeExits(_token: address):
         
         PriorityQueue(self.exitsQueues[_token]).delMin()
         # Delete owner of the utxo
-        self.exits[utxoPos].owner = 0
+        self.exits[utxoPos].owner = ZERO_ADDRESS
 
         if PriorityQueue(self.exitsQueues[_token]).getCurrentSize() > 0:
             [utxoPos, exitable_at] = self.getNextExit(_token)
