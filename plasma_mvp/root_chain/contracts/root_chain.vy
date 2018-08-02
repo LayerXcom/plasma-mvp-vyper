@@ -157,18 +157,26 @@ def startExit(_utxoPos: uint256, _txBytes: bytes, _proof: bytes, _sigs: bytes):
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 @public
 def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes, _proof: bytes, _sigs: bytes, _confirmationSig: bytes):
+    # The position of the exiting utxo
     eUtxoPos: uint256 = self.getUtxoPos(_txBytes, _eUtxoIndex)
+    # The output position of the challenging utxo
     txindex: uint256 = (_cUtxoPos % 1000000000) / 10000
+    # The block root of the challenging utxo
     root: bytes32 = self.childChain[_cUtxoPos / 1000000000].root
-
+    # The hash of the challenging transaction
     txHash: bytes32 = sha3(_txBytes)
+
     confirmationHash: bytes32 = sha3(concat(txHash, root))
     merkleHash: bytes32 = sha3(concat(txHash, _sigs))
+    # The owner of the exiting utxo
     owner: address = self.exits[eUtxoPos].owner
     
+    # Check the owner of the exiting utxo is same as that of the confirmation signature
     assert owner == self.checkSigs(confirmationHash, _confirmationSig)
+    # Check the merkle proof of the transaction used to challenge
     assert self.checkMembership(txindex, root, _proof)
 
+    # Delete the owner but keep the amount to prevent another exit
     self.exits[eUtxoPos].owner = ZERO_ADDRESS
 
 
