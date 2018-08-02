@@ -171,7 +171,8 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes, _pr
     # The owner of the exiting utxo
     owner: address = self.exits[eUtxoPos].owner
     
-    # Check the owner of the exiting utxo is same as that of the confirmation signature
+    # Check the owner of the exiting utxo is same as that of the confirmation signature to check a double spend.
+    # if the utxo is a double spend, the confirmation signature was made by the owner of the exiting utxo.
     assert owner == self.checkSigs(confirmationHash, _confirmationSig)
     # Check the merkle proof of the transaction used to challenge
     assert self.checkMembership(txindex, root, _proof)
