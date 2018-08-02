@@ -3,7 +3,7 @@ contract PriorityQueue():
     def insert(_k: uint256) -> bool: modifying 
     def getMin() -> uint256: constant
     def delMin() -> uint256: modifying
-    def currentSize() -> uint256: constant
+    def getCurrentSize() -> uint256: constant
 
 Deposit: event({_depositor: indexed(address), _depositBlock: indexed(uint256), _token: address, _amount: uint256})
 ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _token: address, _amount: uint256})
@@ -202,7 +202,8 @@ def finalizeExits(_token: address):
         # Delete owner of the utxo
         self.exits[utxoPos].owner = 0
 
-        if 
+        if PriorityQueue(self.exitsQueues[_token]).getCurrentSize() > 0:
+            
 
 
 #

@@ -51,6 +51,11 @@ def delMin() -> uint256:
     
     return retVal
 
+@public
+@constant
+def getCurrentSize() -> uint256:
+    return self.currentSize
+
 @private
 def percUp(_i: uint256):
     j: uint256 = _i
