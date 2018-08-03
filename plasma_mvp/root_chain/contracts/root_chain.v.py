@@ -99,15 +99,16 @@ def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof:
     assert len(_proof) == 512
     proofElement: bytes32
     computedHash: bytes32 = _leaf
+    index: uint256 = _index
 
     # 16 = len(_proof) / 32
     for i in range(16):
         proofElement = extract32(_proof, i * 32, type=bytes32)
-        if _index % 2 == 0:
+        if index % 2 == 0:
             computedHash = sha3(concat(computedHash, proofElement))
         else:
             computedHash = sha3(concat(proofElement, computedHash))
-        _index = convert(floor(convert(_index, "decimal") / 2.0), "uint256")
+        index = convert(floor(convert(index, "decimal") / 2.0), "uint256")
     
     return computedHash == _rootHash
 
