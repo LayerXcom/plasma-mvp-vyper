@@ -292,9 +292,9 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024
 # @dev Processes any exits that have completed the challenge period.
 @public
 def finalizeExits(_token: address):   
-    nextExitArray: [uint256, uint256] = self.getNextExit(_token)
-    utxoPos: uint256 = nextExitArray[0]
-    exitable_at: uint256 = nextExitArray[1]
+    utxoPos: uint256
+    exitable_at: uint256
+    (utxoPos, exitable_at) = self.getNextExit(_token)
 
     currentExit: {
         owner: address,
@@ -316,6 +316,6 @@ def finalizeExits(_token: address):
         self.exits[utxoPos].owner = ZERO_ADDRESS
 
         if PriorityQueue(self.exitsQueues[_token]).getCurrentSize() > 0:
-            [utxoPos, exitable_at] = self.getNextExit(_token)
+            (utxoPos, exitable_at) = self.getNextExit(_token)
         else:
             return
