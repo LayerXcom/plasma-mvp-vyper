@@ -60,7 +60,7 @@ def __init__(_priorityQueueTemplate: address):
 def submitBlock(_root: bytes32):
     # Only operator can execute.
     assert msg.sender == self.operator
-    self.childChain[currentChildBlock] = {
+    self.childChain[self.currentChildBlock] = {
         root: _root,
         blockTimestamp: block.timestamp
     }
