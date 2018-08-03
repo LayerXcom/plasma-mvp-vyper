@@ -25,6 +25,16 @@ def percUp(_i: uint256):
     if i != j:
         self.heapList[i] = newVal
 
+@public
+@constant
+def minChild(_i: uint256) -> uint256:
+    if i * 2 + 1 > self.currentSize:
+        return i * 2
+    else:
+        if self.heapList[_i * 2] < self.heapList[i * 2 + 1]:
+            return i * 2
+        else:
+            return i * 2 + 1
 
 @private
 def percDown(_i: uint256):
@@ -50,16 +60,6 @@ def insert(_k: uint256) -> bool:
     self.percUp(self.currentSize)
     return True
 
-@public
-@constant
-def minChild(_i: uint256) -> uint256:
-    if i * 2 + 1 > self.currentSize:
-        return i * 2
-    else:
-        if self.heapList[_i * 2] < self.heapList[i * 2 + 1]:
-            return i * 2
-        else:
-            return i * 2 + 1
 
 @public
 @constant
