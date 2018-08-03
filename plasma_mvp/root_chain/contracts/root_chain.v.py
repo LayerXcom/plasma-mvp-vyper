@@ -330,7 +330,7 @@ def finalizeExits(_token: address):
         amount: uint256
     } = self.exits[utxoPos]
     for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        if not exitable_at < block.timestamp:
+        if not convert(exitable_at, "int128") < as_unitless_number(convert(block.timestamp, "int128")):
             break
         currentExit = self.exits[utxoPos]
         
