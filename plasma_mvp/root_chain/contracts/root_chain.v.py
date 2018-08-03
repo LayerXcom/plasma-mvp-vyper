@@ -64,9 +64,9 @@ def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
 @constant
 def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes[1024]) -> bool:
     assert len(_sigs) % 65 == 0 and len(_sigs) <= 260
-    sig1: bytes[1024] = slice(_sigs, 0, 65)
-    sig2: bytes[1024] = slice(_sigs, 65, 65)
-    confSig1: bytes[1024] = slice(_sigs, 130, 65)
+    sig1: bytes[1024] = slice(_sigs, start=0, len=65)
+    sig2: bytes[1024] = slice(_sigs, start=65, len=65)
+    confSig1: bytes[1024] = slice(_sigs, start=130, len=65)
     confirmationHash: bytes32 = sha3(concat(_txHash, _rootHash))
 
     check1: bool = true
@@ -85,9 +85,9 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
 def ecrecoverSig(_txHash: bytes32, _sig: bytes[1024]) -> address:
     assert len(_sig) == 65
     # Perhaps convert() can only convert 'bytes' to 'int128', so in that case here should be fixed.
-    r: uint256 = convert(slice(_sig, 0, 32), uint256)
-    s: uint256 = convert(slice(_sig, 32, 32), uint256)
-    v: uint256 = convert(slice(_sig, 64, 1), uint256)
+    r: uint256 = convert(slice(_sig, start=0, len=32), uint256)
+    s: uint256 = convert(slice(_sig, start=32, len=32), uint256)
+    v: uint256 = convert(slice(_sig, start=64, len=1), uint256)
 
     return ecrecover(_txHash, v, r, s)
 
@@ -100,7 +100,7 @@ def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof:
 
     # 16 = len(_proof) / 32
     for i in range(16):
-        proofElement = slice(_proof, i * 32, 32)
+        proofElement = slice(_proof, start=i * 32, len=32)
         if _index % 2 == 0:
             computedHash = sha3(concat(computedHash, ploofElement))
         else:
