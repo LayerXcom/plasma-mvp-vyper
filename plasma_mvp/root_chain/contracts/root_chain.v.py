@@ -102,7 +102,7 @@ def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof:
 
     # 16 = len(_proof) / 32
     for i in range(16):
-        proofElement = slice(_proof, start=i * 32, len=32)
+        proofElement = extract32(_proof, i * 32, type=bytes32)
         if _index % 2 == 0:
             computedHash = sha3(concat(computedHash, ploofElement))
         else:
