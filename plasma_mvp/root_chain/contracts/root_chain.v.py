@@ -66,9 +66,9 @@ def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
 def ecrecoverSig(_txHash: bytes32, _sig: bytes[1024]) -> address:
     assert len(_sig) == 65
     # Perhaps convert() can only convert 'bytes' to 'int128', so in that case here should be fixed.
-    r: uint256 = convert(slice(_sig, start=0, len=32), "uint256")
-    s: uint256 = convert(slice(_sig, start=32, len=32), "uint256")
-    v: uint256 = convert(slice(_sig, start=64, len=1), "uint256")
+    r: uint256 = convert(extract32(_sig, 0, type=int128), "uint256")
+    s: uint256 = convert(extract32(_sig, 32, type=int128), "uint256")
+    v: uint256 = convert(extract32(_sig, 64, type=int128), "uint256") # TODO: make sure this code work correctly
 
     return ecrecover(_txHash, v, r, s)
 
