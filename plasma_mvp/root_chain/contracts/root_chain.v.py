@@ -53,7 +53,7 @@ def createExitingTx(_exitingTxBytes: bytes[1024], _oIndex: uint256) -> (address,
 @constant
 def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
     # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
-    txList = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
+    txList = RLPList(_challengingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
     oIndexShift: uint256 = _oIndex * 3
     if _oIndex == 0:
         return txList[0] + txList[1] + txList[2]
