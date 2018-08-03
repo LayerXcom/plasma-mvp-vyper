@@ -141,7 +141,12 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _si
     txindex: uint256 = (_utxoPos % 1000000000) / 10000
     oindex: uint256 = _utxoPos - blknum * 1000000000 - txindex * 10000
 
-    exitingTx: ExitingTx = self.createExitingTx(_txBytes, oindex)
+    exitingTx: {
+        exitor: address,
+        token: address,
+        amount: uint256,
+        inputCount: uint256
+    } = self.createExitingTx(_txBytes, oindex)
     assert msg.sender == exitingTx.exitor
 
     root: bytes32 = self.childChain[blknum].root
@@ -285,12 +290,12 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
 def createExitingTx(_exitingTxBytes: bytes[1024], _oindex: uint256) -> exitingTx:
     # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
     txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
-    return ExitingTx({
+    return {
         exitor: txList[7 + _oindex * 2],
         token: txList[6],
         amount: txList[8 + _oindex * 2],
         inputCount: txList[0] * txList[3]
-    })
+    }
 
 @private
 @constant
