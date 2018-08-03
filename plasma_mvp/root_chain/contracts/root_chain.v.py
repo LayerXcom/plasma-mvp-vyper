@@ -172,10 +172,10 @@ def __init__(_priorityQueueTemplate: address):
 
 # @dev Adds an exit to the exit queue.
 @private
-def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: uint256):
+def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: uint256(sec, positional)):
     assert self.exitsQueues[_token] != ZERO_ADDRESS
     # Maximum _created_at + 2 weeks or block.timestamp + 1 week
-    exitable_at: int128 = max(convert(_created_at, "int128") + 2 * 7 * 24 * 60 * 60, convert(block.timestamp, 'int128') + 1 * 7 * 24 * 60 * 60)
+    exitable_at: int128(sec) = max(convert(_created_at, "int128") + 2 * 7 * 24 * 60 * 60, convert(block.timestamp, 'int128') + 1 * 7 * 24 * 60 * 60)
     # "priority" represents priority of　exitable_at over utxo position. 
     priority: uint256 = bitwise_or(shift(convert(exitable_at, "uint256"), 128), _utxoPos)
     assert _amount > 0
@@ -255,7 +255,7 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
     assert root == depositHash
 
     # TODO: Is the converting correct?
-    self.addExitToQueue(_depositPos, msg.sender, _token, _amount, convert(self.childChain[blknum].blockTimestamp, "uint256"))
+    self.addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].blockTimestamp)
 
 # @dev Allows the operator withdraw any allotted fees. Starts an exit to avoid theft.
 # @param _token Token to withdraw.
