@@ -32,6 +32,109 @@ currentDepositBlock: uint256
 currentFeeExit: uint256
 
 
+#
+# Library
+#
+
+@private
+@constant
+def createExitingTx(_exitingTxBytes: bytes[1024], _oindex: uint256) -> (address, address, uint256, uint256):
+    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
+    txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
+    return txList[7 + _oindex * 2], txList[6], txList[8 + _oindex * 2], txList[0] * txList[3] # exitor, token, amount, inputCount
+
+@private
+@constant
+def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
+    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
+    txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
+    oIndexShift: uint256 = _oIndex * 3
+    return txList[0 + oIndexShift] + txList[1 + oIndexShift] + txList[2 + oIndexShift]
+
+@private
+@constant
+def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes[1024]) -> bool:
+    assert len(_sigs) % 65 == 0 and len(_sigs) <= 260
+    sig1: bytes[1024] = slice(_sigs, 0, 65)
+    sig2: bytes[1024] = slice(_sigs, 65, 65)
+    confSig1: bytes[1024] = slice(_sigs, 130, 65)
+    confirmationHash: bytes32 = sha3(concat(_txHash, _rootHash))
+
+    check1: bool = true
+    check2: bool = true
+
+    check1 = self.ecrecoverSig(_txhash, sig1) == self.ecrecoverSig(confirmationHash, confSig1)
+    if _blknum2 > 0:
+        confSig2: bytes[1024] = slice(_sigs, 195, 65)
+        check2 = self.ecrecoverSig(_txHash, sig2) == self.ecrecoverSig(confirmationHash, confSig2)
+
+    return check1 and check2
+
+
+@private
+@constant
+def ecrecoverSig(_txHash: bytes32, _sig: bytes[1024]) -> address:
+    assert len(_sig) == 65
+    # Perhaps convert() can only convert 'bytes' to 'int128', so in that case here should be fixed.
+    r: uint256 = convert(slice(_sig, 0, 32), uint256)
+    s: uint256 = convert(slice(_sig, 32, 32), uint256)
+    v: uint256 = convert(slice(_sig, 64, 1), uint256)
+
+    return ecrecover(_txHash, v, r, s)
+
+@private
+@constant
+def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes[1024]) -> bool:
+    assert len(_proof) == 512
+    proofElement: bytes32
+    computedHash: bytes32 = _leaf
+
+    # 16 = len(_proof) / 32
+    for i in range(16):
+        proofElement = slice(_proof, i * 32, 32)
+        if _index % 2 == 0:
+            computedHash = sha3(concat(computedHash, ploofElement))
+        else:
+            computedHash = sha3(concat(proofElement, computedHash))
+        _index = _index / 2
+    
+    return computedHash == _rootHash
+
+
+#
+# Public view functions
+#
+
+# @dev Queries the child chain.
+@public
+@constant
+def getChildChain(_blockNumber: uint256) -> (bytes32, uint256):
+    return self.childChain[_blockNumber].root, self.childChain[_blockNumber].blockTimestamp
+
+# @dev Determines the next deposit block number.
+# @return Block number to be given to the next deposit block.
+@public
+@constant
+def getDepositBlock() -> uint256:
+    return self.currentChildBlock - self.CHILD_BLOCK_INTERVAL + self.currentDepositBlock
+
+# @dev Returns information about an exit.
+@public
+@constant
+def getExit(_utxoPos: uint256) -> (address, address, uint256):
+    return self.exits[_utxoPos].owner, self.exits[_utxoPos].token, self.exits[_utxoPos].amount
+
+# @dev Determines the next exit to be processed.
+@public
+@constant
+def getNextExit(_token: address) -> (uint256, uint256):
+    priority: uint256 = PriorityQueue(self.exitsQueues[_token]).getMin()
+    utxoPos: uint256 = uint256(int128(priority))
+    exitable_at: uint256 = shift(priority, 128)
+    return utxoPos, exitable_at
+
+
+
 # @dev Constructor
 @public
 def __init__(_priorityQueueTemplate: address):
@@ -49,6 +152,7 @@ def __init__(_priorityQueueTemplate: address):
     assert PriorityQueue(priorityQueue).setup()
     # ETH_ADDRESS means currently support only ETH.
     self.exitsQueues[self.ETH_ADDRESS] = priorityQueue
+
 
 #
 # Public Functions
@@ -202,132 +306,3 @@ def finalizeExits(_token: address):
             [utxoPos, exitable_at] = self.getNextExit(_token)
         else:
             return
-
-
-#
-# Public view functions
-#
-
-# @dev Queries the child chain.
-@public
-@constant
-def getChildChain(_blockNumber: uint256) -> (bytes32, uint256):
-    return self.childChain[_blockNumber].root, self.childChain[_blockNumber].blockTimestamp
-
-# @dev Determines the next deposit block number.
-# @return Block number to be given to the next deposit block.
-@public
-@constant
-def getDepositBlock() -> uint256:
-    return self.currentChildBlock - self.CHILD_BLOCK_INTERVAL + self.currentDepositBlock
-
-# @dev Returns information about an exit.
-@public
-@constant
-def getExit(_utxoPos: uint256) -> (address, address, uint256):
-    return self.exits[_utxoPos].owner, self.exits[_utxoPos].token, self.exits[_utxoPos].amount
-
-# @dev Determines the next exit to be processed.
-@public
-@constant
-def getNextExit(_token: address) -> (uint256, uint256):
-    priority: uint256 = PriorityQueue(self.exitsQueues[_token]).getMin()
-    utxoPos: uint256 = uint256(int128(priority))
-    exitable_at: uint256 = shift(priority, 128)
-    return utxoPos, exitable_at
-
-
-#
-# Private functions
-#
-
-# @dev Adds an exit to the exit queue.
-@private
-def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: uint256):
-    assert self.exitsQueues[_token] != ZERO_ADDRESS
-
-    # Maximum _created_at + 2 weeks or block.timestamp + 1 week
-    exitable_at: int128 = max(int128(_created_at) + 2 * 7 * 24 * 60 * 60, int128(block.timestamp) + 1 * 7 * 24 * 60 * 60)
-    # "priority" represents priority of　exitable_at over utxo position. 
-    priority: uint256 = bitwise_or(shift(uint256(exitable_at), 128), _utxoPos)
-
-    assert _amount > 0
-    assert self.exits[_utxoPos].amount == 0
-
-    assert PriorityQueue(self.exitsQueues[self.ETH_ADDRESS]).insert(priority)
-
-    self.exits[_utxoPos] = {
-        owner: _exitor,
-        token: _token,
-        amount: _amount
-    }
-    log.ExitStarted(msg.sender, _utxoPos, _token, _amount)
-
-
-#
-# Library
-#
-
-@private
-@constant
-def createExitingTx(_exitingTxBytes: bytes[1024], _oindex: uint256) -> (address, address, uint256, uint256):
-    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
-    txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
-    return txList[7 + _oindex * 2], txList[6], txList[8 + _oindex * 2], txList[0] * txList[3] # exitor, token, amount, inputCount
-
-@private
-@constant
-def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
-    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
-    txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
-    oIndexShift: uint256 = _oIndex * 3
-    return txList[0 + oIndexShift] + txList[1 + oIndexShift] + txList[2 + oIndexShift]
-
-@private
-@constant
-def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes[1024]) -> bool:
-    assert len(_sigs) % 65 == 0 and len(_sigs) <= 260
-    sig1: bytes[1024] = slice(_sigs, 0, 65)
-    sig2: bytes[1024] = slice(_sigs, 65, 65)
-    confSig1: bytes[1024] = slice(_sigs, 130, 65)
-    confirmationHash: bytes32 = sha3(concat(_txHash, _rootHash))
-
-    check1: bool = true
-    check2: bool = true
-
-    check1 = self.ecrecoverSig(_txhash, sig1) == self.ecrecoverSig(confirmationHash, confSig1)
-    if _blknum2 > 0:
-        confSig2: bytes[1024] = slice(_sigs, 195, 65)
-        check2 = self.ecrecoverSig(_txHash, sig2) == self.ecrecoverSig(confirmationHash, confSig2)
-
-    return check1 and check2
-
-
-@private
-@constant
-def ecrecoverSig(_txHash: bytes32, _sig: bytes[1024]) -> address:
-    assert len(_sig) == 65
-    # Perhaps convert() can only convert 'bytes' to 'int128', so in that case here should be fixed.
-    r: uint256 = convert(slice(_sig, 0, 32), uint256)
-    s: uint256 = convert(slice(_sig, 32, 32), uint256)
-    v: uint256 = convert(slice(_sig, 64, 1), uint256)
-
-    return ecrecover(_txHash, v, r, s)
-
-@private
-@constant
-def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes[1024]) -> bool:
-    assert len(_proof) == 512
-    proofElement: bytes32
-    computedHash: bytes32 = _leaf
-
-    # 16 = len(_proof) / 32
-    for i in range(16):
-        proofElement = slice(_proof, i * 32, 32)
-        if _index % 2 == 0:
-            computedHash = sha3(concat(computedHash, ploofElement))
-        else:
-            computedHash = sha3(concat(proofElement, computedHash))
-        _index = _index / 2
-    
-    return computedHash == _rootHash
