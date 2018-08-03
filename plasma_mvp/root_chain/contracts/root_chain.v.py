@@ -254,7 +254,8 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
     # Check that the block root of the UTXO position is same as depositHash.
     assert root == depositHash
 
-    self.addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].blockTimestamp)
+    # TODO: Is the converting correct?
+    self.addExitToQueue(_depositPos, msg.sender, _token, _amount, convert(self.childChain[blknum].blockTimestamp, "uint256")
 
 # @dev Allows the operator withdraw any allotted fees. Starts an exit to avoid theft.
 # @param _token Token to withdraw.
