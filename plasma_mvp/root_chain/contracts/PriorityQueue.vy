@@ -2,11 +2,6 @@ owner: address
 heapList: uint256[int128]
 currentSize: uint256
 
-#@public
-#def __init__():
-#    self.owner = msg.sender    
-#    self.currentSize = 0
-
 # Temporary solution for constructor, 
 # look at https://github.com/ethereum/vyper/issues/773#issuecomment-383714363
 @public
