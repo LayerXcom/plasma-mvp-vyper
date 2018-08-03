@@ -55,7 +55,9 @@ def getCurrentSize() -> uint256:
 def percUp(_i: uint256):
     j: uint256 = _i
     newVal: uint256 = self.heapList[int128(_i)]
-    while newVal < self.heapList[int128(_i / 2)]:   # correct syntax?
+    for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
+        if not newVal < self.heapList[int128(_i / 2)]:
+            break
         self.heapList[int128(_i)] = self.heapList[int128(_i / 2)]
         _i /= 2
 
@@ -68,7 +70,9 @@ def percDown(_i: uint256):
     j: uint256 = _i
     newVal: uint256 = self.heapList[int128(_i)]
     mc: uint256 = self.minChild(_i)
-    while mc <= self.currentSize and newVal > self.heapList[int128(mc)]:    # correct syntax?
+    for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
+        if not mc <= self.currentSize and newVal > self.heapList[int128(mc)]:
+            break
         self.heapList[int128(_i)] = self.heapList[int128(mc)]
         _i = mc
         mc = self.minChild(_i)
