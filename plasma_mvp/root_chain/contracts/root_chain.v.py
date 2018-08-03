@@ -30,9 +30,8 @@ exits: {
 
 exitsQueues: address[address]
 
-# TODO: how to set default value? maybe correct.
-CHILD_BLOCK_INTERVAL: uint256 = 1000
-ETH_ADDRESS: address = ZERO_ADDRESS
+CHILD_BLOCK_INTERVAL: uint256
+ETH_ADDRESS: address
 
 operator: address
 currentChildBlock: uint256
@@ -45,6 +44,8 @@ currentFeeExit: uint256
 def __init__(_priorityQueueTemplate: address):
     assert _priorityQueueTemplate != ZERO_ADDRESS
     self.operator = msg.sender
+    self.CHILD_BLOCK_INTERVAL = 1000
+    self.ETH_ADDRESS = ZERO_ADDRESS
     self.currentChildBlock = self.CHILD_BLOCK_INTERVAL
     self.currentDepositBlock = 1
     self.currentFeeExit = 1    
