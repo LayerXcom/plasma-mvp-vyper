@@ -12,7 +12,7 @@ TokenAdded: event({_token: address})
 
 childChain: {
     root: bytes32,
-    timestamp: timestamp
+    blockTimestamp: timestamp
 }[uint256]
 
 Exit: {
@@ -69,7 +69,7 @@ def submitBlock(_root: bytes32):
     assert msg.sender == self.operator
     self.childChain[currentChildBlock] = {
         root: _root,
-        timestamp: block.timestamp
+        blockTimestamp: block.timestamp
     }
 
     # Update block numbers.
@@ -95,7 +95,7 @@ def deposit():
 
     self.childChain[depositBlock] = {
         root: root,
-        timestamp: block.timestamp
+        blockTimestamp: block.timestamp
     }
     self.currentDepositBlock += 1
 
@@ -122,7 +122,7 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
     # Check that the block root of the UTXO position is same as depositHash.
     assert root == depositHash
 
-    self.addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].timestamp)
+    self.addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].blockTimestamp)
 
 # @dev Allows the operator withdraw any allotted fees. Starts an exit to avoid theft.
 # @param _token Token to withdraw.
@@ -155,7 +155,7 @@ def startExit(_utxoPos: uint256, _txBytes: bytes, _proof: bytes, _sigs: bytes):
     assert self.checkSigs(sha3(_txBytes), root, exitingTx.inputCount, _sigs)
     assert self.checkMembership(txindex, root, _proof)
 
-    self.addExitToQueue(_utxoPos, exitingTx.exitor, exitingTx.token, exitingTx.amount, childChain[blknum].timestamp)
+    self.addExitToQueue(_utxoPos, exitingTx.exitor, exitingTx.token, exitingTx.amount, childChain[blknum].blockTimestamp)
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 @public
@@ -220,7 +220,7 @@ def finalizeExits(_token: address):
 @public
 @constant
 def getChildChain(_blockNumber: uint256) -> [bytes32, uint256]:  # how to return multiple value?
-    return [self.childChain[_blockNumber].root, self.childChain[_blockNumber].timestamp]
+    return [self.childChain[_blockNumber].root, self.childChain[_blockNumber].blockTimestamp]
 
 # @dev Determines the next deposit block number.
 # @return Block number to be given to the next deposit block.
