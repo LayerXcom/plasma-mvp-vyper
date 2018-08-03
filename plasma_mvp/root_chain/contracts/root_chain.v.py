@@ -150,12 +150,7 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _si
     assert msg.sender == exitingTx.exitor
 
     root: bytes32 = self.childChain[blknum].root
-    merkleHash: bytes32 = sha3(
-                            concat(
-                                sha3(_txBytes),
-                                slice(_sigs, 0, 130)
-                            )
-    )
+    merkleHash: bytes32 = sha3(concat(sha3(_txBytes), slice(_sigs, 0, 130)))
 
     assert self.checkSigs(sha3(_txBytes), root, exitingTx.inputCount, _sigs)
     assert self.checkMembership(txindex, root, _proof)
