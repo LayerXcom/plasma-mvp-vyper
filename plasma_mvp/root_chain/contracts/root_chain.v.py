@@ -69,8 +69,8 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
     confSig1: bytes[1024] = slice(_sigs, start=130, len=65)
     confirmationHash: bytes32 = sha3(concat(_txHash, _rootHash))
 
-    check1: bool = true
-    check2: bool = true
+    check1: bool = True
+    check2: bool = True
 
     check1 = self.ecrecoverSig(_txhash, sig1) == self.ecrecoverSig(confirmationHash, confSig1)
     if _blknum2 > 0:
