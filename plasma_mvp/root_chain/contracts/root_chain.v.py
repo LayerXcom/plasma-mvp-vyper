@@ -107,7 +107,7 @@ def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof:
             computedHash = sha3(concat(computedHash, ploofElement))
         else:
             computedHash = sha3(concat(proofElement, computedHash))
-        _index = _index / 2
+        _index = convert(floor(convert(_index, "decimal") / 2.0), "uint256")
     
     return computedHash == _rootHash
 
