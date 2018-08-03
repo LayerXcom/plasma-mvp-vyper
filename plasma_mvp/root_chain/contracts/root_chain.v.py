@@ -224,7 +224,7 @@ def finalizeExits(_token: address):
 @public
 @constant
 def getChildChain(_blockNumber: uint256) -> (bytes32, uint256):
-    return (self.childChain[_blockNumber].root, self.childChain[_blockNumber].blockTimestamp)
+    return self.childChain[_blockNumber].root, self.childChain[_blockNumber].blockTimestamp
 
 # @dev Determines the next deposit block number.
 # @return Block number to be given to the next deposit block.
@@ -237,7 +237,7 @@ def getDepositBlock() -> uint256:
 @public
 @constant
 def getExit(_utxoPos: uint256) -> (address, address, uint256):
-    return (self.exits[_utxoPos].owner, self.exits[_utxoPos].token, self.exits[_utxoPos].amount)
+    return self.exits[_utxoPos].owner, self.exits[_utxoPos].token, self.exits[_utxoPos].amount
 
 # @dev Determines the next exit to be processed.
 @public
@@ -246,7 +246,7 @@ def getNextExit(_token: address) -> (uint256, uint256):
     priority: uint256 = PriorityQueue(self.exitsQueues[_token]).getMin()
     utxoPos: uint256 = uint256(int128(priority))
     exitable_at: uint256 = shift(priority, 128)
-    return (utxoPos, exitable_at)
+    return utxoPos, exitable_at
 
 
 #
