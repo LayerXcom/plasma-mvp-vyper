@@ -337,7 +337,7 @@ def finalizeExits(_token: address):
         # Allowed only ETH
         assert _token == ZERO_ADDRESS
         # Send the token amount of the exiting utxo to the owner of the utxo
-        send(currentExit.owner, currentExit.amount)
+        send(currentExit.owner, as_wei_value(currentExit.amount, "wei"))
         
         PriorityQueue(self.exitsQueues[_token]).delMin()
         # Delete owner of the utxo
