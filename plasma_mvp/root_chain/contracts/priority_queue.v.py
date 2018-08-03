@@ -28,13 +28,13 @@ def percUp(_i: uint256):
 @public
 @constant
 def minChild(_i: uint256) -> uint256:
-    if i * 2 + 1 > self.currentSize:
-        return i * 2
+    if _i * 2 + 1 > self.currentSize:
+        return _i * 2
     else:
-        if self.heapList[_i * 2] < self.heapList[i * 2 + 1]:
-            return i * 2
+        if self.heapList[_i * 2] < self.heapList[_i * 2 + 1]:
+            return _i * 2
         else:
-            return i * 2 + 1
+            return _i * 2 + 1
 
 @private
 def percDown(_i: uint256):
