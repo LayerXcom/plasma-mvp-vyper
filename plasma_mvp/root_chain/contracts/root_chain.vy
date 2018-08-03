@@ -192,7 +192,9 @@ def finalizeExits(_token: address):
     exitable_at: uint256 = nextExitArray[1]
 
     currentExit: Exit = exits[utxoPos]
-    while exitable_at < block.timestamp:
+    for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
+        if not exitable_at < block.timestamp:
+            break
         currentExit = self.exits[utxoPos]
         
         # Allowed only ETH
