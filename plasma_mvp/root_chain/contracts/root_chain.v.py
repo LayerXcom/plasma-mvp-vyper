@@ -236,8 +236,8 @@ def getDepositBlock() -> uint256:
 # @dev Returns information about an exit.
 @public
 @constant
-def getExit(_utxoPos: uint256) -> [address, address, uint256]:
-    return [self.exits[_utxoPos].owner, self.exits[_utxoPos].token, self.exits[_utxoPos].amount]
+def getExit(_utxoPos: uint256) -> (address, address, uint256):
+    return (self.exits[_utxoPos].owner, self.exits[_utxoPos].token, self.exits[_utxoPos].amount)
 
 # @dev Determines the next exit to be processed.
 @public
