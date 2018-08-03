@@ -10,6 +10,36 @@ def setup() -> bool:
     self.currentSize = 0
     return True
 
+@private
+def percUp(_i: uint256):
+    j: uint256 = _i
+    newVal: uint256 = self.heapList[_i]
+    for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
+        k :uint256 = floor(convert(_i, "decimal") / 2.0)
+        if not newVal < self.heapList[k]:
+            break
+        self.heapList[_i] = self.heapList[k]
+        _i = k
+
+    if _i != j:
+        self.heapList[_i] = newVal
+
+
+@private
+def percDown(_i: uint256):
+    j: uint256 = _i
+    newVal: uint256 = self.heapList[_i]
+    mc: uint256 = self.minChild(_i)
+    for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
+        if not mc <= self.currentSize and newVal > self.heapList[mc]:
+            break
+        self.heapList[_i] = self.heapList[mc]
+        _i = mc
+        mc = self.minChild(_i)
+
+    if _i != j:
+        self.heapList[_i] = newVal
+
 @public
 def insert(_k: uint256) -> bool:
     assert msg.sender == self.owner
@@ -50,33 +80,3 @@ def delMin() -> uint256:
 @constant
 def getCurrentSize() -> uint256:
     return self.currentSize
-
-@private
-def percUp(_i: uint256):
-    j: uint256 = _i
-    newVal: uint256 = self.heapList[_i]
-    for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        k :uint256 = floor(convert(_i, "decimal") / 2.0)
-        if not newVal < self.heapList[k]:
-            break
-        self.heapList[_i] = self.heapList[k]
-        _i = k
-
-    if _i != j:
-        self.heapList[_i] = newVal
-
-
-@private
-def percDown(_i: uint256):
-    j: uint256 = _i
-    newVal: uint256 = self.heapList[_i]
-    mc: uint256 = self.minChild(_i)
-    for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        if not mc <= self.currentSize and newVal > self.heapList[mc]:
-            break
-        self.heapList[_i] = self.heapList[mc]
-        _i = mc
-        mc = self.minChild(_i)
-
-    if _i != j:
-        self.heapList[_i] = newVal
