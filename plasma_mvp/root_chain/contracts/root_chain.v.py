@@ -328,7 +328,7 @@ def finalizeExits(_token: address):
         owner: address,
         token: address,
         amount: uint256
-    } = exits[utxoPos]
+    } = self.exits[utxoPos]
     for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
         if not exitable_at < block.timestamp:
             break
