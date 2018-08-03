@@ -141,21 +141,16 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _si
     txindex: uint256 = (_utxoPos % 1000000000) / 10000
     oindex: uint256 = _utxoPos - blknum * 1000000000 - txindex * 10000
 
-    exitingTx: {
-        exitor: address,
-        token: address,
-        amount: uint256,
-        inputCount: uint256
-    } = self.createExitingTx(_txBytes, oindex)
-    assert msg.sender == exitingTx.exitor
+    exitor, token, amount, inputCount = self.createExitingTx(_txBytes, oindex)
+    assert msg.sender == exitor
 
     root: bytes32 = self.childChain[blknum].root
     merkleHash: bytes32 = sha3(concat(sha3(_txBytes), slice(_sigs, 0, 130)))
 
-    assert self.checkSigs(sha3(_txBytes), root, exitingTx.inputCount, _sigs)
+    assert self.checkSigs(sha3(_txBytes), root, inputCount, _sigs)
     assert self.checkMembership(txindex, root, _proof)
 
-    self.addExitToQueue(_utxoPos, exitingTx.exitor, exitingTx.token, exitingTx.amount, childChain[blknum].blockTimestamp)
+    self.addExitToQueue(_utxoPos, exitor, token, amount, childChain[blknum].blockTimestamp)
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 @public
@@ -282,20 +277,10 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
 
 @private
 @constant
-def createExitingTx(_exitingTxBytes: bytes[1024], _oindex: uint256) -> {
-        exitor: address,
-        token: address,
-        amount: uint256,
-        inputCount: uint256
-    }:
+def createExitingTx(_exitingTxBytes: bytes[1024], _oindex: uint256) -> (address, address, uint256, uint256):
     # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
     txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
-    return {
-        exitor: txList[7 + _oindex * 2],
-        token: txList[6],
-        amount: txList[8 + _oindex * 2],
-        inputCount: txList[0] * txList[3]
-    }
+    return txList[7 + _oindex * 2], txList[6], txList[8 + _oindex * 2], txList[0] * txList[3] # exitor, token, amount, inputCount
 
 @private
 @constant
