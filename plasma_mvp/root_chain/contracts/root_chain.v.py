@@ -224,7 +224,7 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
                                     convert(_token, "bytes32"),
                                     convert(_amount, "bytes32")
                                 )
-    )
+                        )
     # Check that the block root of the UTXO position is same as depositHash.
     assert root == depositHash
 
