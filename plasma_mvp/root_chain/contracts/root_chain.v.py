@@ -6,7 +6,7 @@ contract PriorityQueue():
     def getCurrentSize() -> uint256: constant
 
 Deposit: event({_depositor: indexed(address), _depositBlock: indexed(uint256), _token: address, _amount: uint256(wei)})
-ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _token: address, _amount: uint256(wei)})
+ExitStarted: event({_exitor: indexed(address), _utxoPos: indexed(uint256), _token: address, _amount: uint256})
 BlockSubmitted: event({_root: bytes32, _timestamp: timestamp})
 TokenAdded: event({_token: address})
 
@@ -177,7 +177,7 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
     # Maximum _created_at + 2 weeks or block.timestamp + 1 week
     exitable_at: int128 = max(convert(_created_at, "int128") + 2 * 7 * 24 * 60 * 60, convert(block.timestamp, 'int128') + 1 * 7 * 24 * 60 * 60)
     # "priority" represents priority of　exitable_at over utxo position. 
-    priority: uint256 = bitwise_or(shift(uint256(exitable_at), 128), _utxoPos)
+    priority: uint256 = bitwise_or(shift(convert(exitable_at, "uint256"), 128), _utxoPos)
     assert _amount > 0
     assert self.exits[_utxoPos].amount == 0
     assert PriorityQueue(self.exitsQueues[self.ETH_ADDRESS]).insert(priority)
