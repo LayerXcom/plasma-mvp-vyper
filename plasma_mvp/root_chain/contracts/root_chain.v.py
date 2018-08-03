@@ -60,6 +60,19 @@ def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
     if _oIndex == 1:
         return txList[3] + txList[4] + txList[5]
 
+
+@private
+@constant
+def ecrecoverSig(_txHash: bytes32, _sig: bytes[1024]) -> address:
+    assert len(_sig) == 65
+    # Perhaps convert() can only convert 'bytes' to 'int128', so in that case here should be fixed.
+    r: uint256 = convert(slice(_sig, start=0, len=32), uint256)
+    s: uint256 = convert(slice(_sig, start=32, len=32), uint256)
+    v: uint256 = convert(slice(_sig, start=64, len=1), uint256)
+
+    return ecrecover(_txHash, v, r, s)
+
+
 @private
 @constant
 def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes[1024]) -> bool:
@@ -79,17 +92,6 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
 
     return check1 and check2
 
-
-@private
-@constant
-def ecrecoverSig(_txHash: bytes32, _sig: bytes[1024]) -> address:
-    assert len(_sig) == 65
-    # Perhaps convert() can only convert 'bytes' to 'int128', so in that case here should be fixed.
-    r: uint256 = convert(slice(_sig, start=0, len=32), uint256)
-    s: uint256 = convert(slice(_sig, start=32, len=32), uint256)
-    v: uint256 = convert(slice(_sig, start=64, len=1), uint256)
-
-    return ecrecover(_txHash, v, r, s)
 
 @private
 @constant
