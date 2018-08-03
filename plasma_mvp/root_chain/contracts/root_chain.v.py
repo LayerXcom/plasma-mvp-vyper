@@ -83,8 +83,8 @@ def deposit():
                             convert(self.ETH_ADDRESS, "bytes32"),
                             convert(msg.value, "bytes32")
                         )
-    )                
-    depositBlock: uint256 = getDepositBlock()
+                    )                
+    depositBlock: uint256 = self.getDepositBlock()
 
     self.childChain[depositBlock] = {
         root: root,
