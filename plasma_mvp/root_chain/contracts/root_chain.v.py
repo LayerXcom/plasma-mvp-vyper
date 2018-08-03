@@ -15,13 +15,6 @@ childChain: {
     blockTimestamp: timestamp
 }[uint256]
 
-ExitingTx: {
-    exitor: address,
-    token: address,
-    amount: uint256,
-    inputCount: uint256
-}
-
 exits: {
     owner: address,
     token: address,
