@@ -15,12 +15,6 @@ childChain: {
     blockTimestamp: timestamp
 }[uint256]
 
-Exit: {
-    owner: address,
-    token: address,
-    amount: uint256
-}
-
 ExitingTx: {
     exitor: address,
     token: address,
@@ -28,7 +22,12 @@ ExitingTx: {
     inputCount: uint256
 }
 
-exits: Exit[uint256]
+exits: {
+    owner: address,
+    token: address,
+    amount: uint256
+}[uint256]
+
 exitsQueues: address[address]
 
 # TODO: how to set default value? maybe correct.
@@ -191,7 +190,11 @@ def finalizeExits(_token: address):
     utxoPos: uint256 = nextExitArray[0]
     exitable_at: uint256 = nextExitArray[1]
 
-    currentExit: Exit = exits[utxoPos]
+    currentExit: {
+        owner: address,
+        token: address,
+        amount: uint256
+    } = exits[utxoPos]
     for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
         if not exitable_at < block.timestamp:
             break
