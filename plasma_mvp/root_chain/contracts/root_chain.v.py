@@ -239,7 +239,11 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _si
     txindex: uint256 = (_utxoPos % 1000000000) / 10000
     oindex: uint256 = _utxoPos - blknum * 1000000000 - txindex * 10000
 
-    exitor, token, amount, inputCount = self.createExitingTx(_txBytes, oindex)
+    exitor: address
+    token: address
+    amount: uint256
+    inputCount: uint256
+    (exitor, token, amount, inputCount) = self.createExitingTx(_txBytes, oindex)
     assert msg.sender == exitor
 
     root: bytes32 = self.childChain[blknum].root
