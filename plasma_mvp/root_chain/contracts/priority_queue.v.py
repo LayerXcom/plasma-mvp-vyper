@@ -1,5 +1,5 @@
 owner: address
-heapList: uint256[int128]
+heapList: uint256[uint256]
 currentSize: uint256
 
 # Temporary solution for constructor, 
@@ -13,7 +13,7 @@ def setup() -> bool:
 @public
 def insert(_k: uint256) -> bool:
     assert msg.sender == self.owner
-    self.heapList[int128(self.currentSize)] = _k
+    self.heapList[self.currentSize] = _k
     self.currentSize += 1
     self.percUp(self.currentSize)
     return True
@@ -38,8 +38,8 @@ def getMin() -> uint256:
 def delMin() -> uint256:
     assert msg.sender == self.owner
     retVal: uint256 = self.heapList[1]
-    self.heapList[1] = self.heapList[int128(self.currentSize)]
-    self.heapList[int128(self.currentSize)] = 0
+    self.heapList[1] = self.heapList[self.currentSize]
+    self.heapList[self.currentSize] = 0
 
     self.currentSize -= 1
     self.percDown(1)
@@ -54,12 +54,12 @@ def getCurrentSize() -> uint256:
 @private
 def percUp(_i: uint256):
     j: uint256 = _i
-    newVal: uint256 = self.heapList[int128(_i)]
+    newVal: uint256 = self.heapList[_i]
     for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
         k :uint256 = floor(convert(_i, "decimal") / 2.0)
-        if not newVal < self.heapList[int128(k)]:
+        if not newVal < self.heapList[k]:
             break
-        self.heapList[int128(_i)] = self.heapList[int128(k)]
+        self.heapList[_i] = self.heapList[k]
         _i = k
 
     if _i != j:
@@ -69,14 +69,14 @@ def percUp(_i: uint256):
 @private
 def percDown(_i: uint256):
     j: uint256 = _i
-    newVal: uint256 = self.heapList[int128(_i)]
+    newVal: uint256 = self.heapList[_i]
     mc: uint256 = self.minChild(_i)
     for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        if not mc <= self.currentSize and newVal > self.heapList[int128(mc)]:
+        if not mc <= self.currentSize and newVal > self.heapList[mc]:
             break
-        self.heapList[int128(_i)] = self.heapList[int128(mc)]
+        self.heapList[_i] = self.heapList[mc]
         _i = mc
         mc = self.minChild(_i)
 
     if _i != j:
-        self.heapList[int128(_i)] = newVal
+        self.heapList[_i] = newVal
