@@ -14,7 +14,7 @@ def setup() -> bool:
 def percUp(_i: uint256):
     j: uint256 = _i
     newVal: uint256 = self.heapList[_i]
-    i :uint256 = _i
+    i: uint256 = _i
     for _ in range(10000): # TODO: Right way? In addition, range() does not accept variable?
         k: uint256 = convert(floor(convert(i, "decimal") / 2.0), "uint256")
         if not newVal < self.heapList[k]:
@@ -40,7 +40,7 @@ def minChild(_i: uint256) -> uint256:
 def percDown(_i: uint256):
     j: uint256 = _i
     newVal: uint256 = self.heapList[_i]
-    i :uint256 = _i
+    i: uint256 = _i
     mc: uint256 = self.minChild(_i)
     for _ in range(10000): # TODO: Right way? In addition, range() does not accept variable?
         if not mc <= self.currentSize and newVal > self.heapList[mc]:
