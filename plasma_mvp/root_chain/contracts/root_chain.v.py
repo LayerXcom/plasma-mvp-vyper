@@ -167,6 +167,29 @@ def __init__(_priorityQueueTemplate: address):
 
 
 #
+# Private functions
+#
+
+# @dev Adds an exit to the exit queue.
+@private
+def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: uint256):
+    assert self.exitsQueues[_token] != ZERO_ADDRESS
+    # Maximum _created_at + 2 weeks or block.timestamp + 1 week
+    exitable_at: int128 = max(convert(_created_at, "int128") + 2 * 7 * 24 * 60 * 60, convert(block.timestamp, 'int128') + 1 * 7 * 24 * 60 * 60)
+    # "priority" represents priority of　exitable_at over utxo position. 
+    priority: uint256 = bitwise_or(shift(uint256(exitable_at), 128), _utxoPos)
+    assert _amount > 0
+    assert self.exits[_utxoPos].amount == 0
+    assert PriorityQueue(self.exitsQueues[self.ETH_ADDRESS]).insert(priority)
+    self.exits[_utxoPos] = {
+        owner: _exitor,
+        token: _token,
+        amount: _amount
+    }
+    log.ExitStarted(msg.sender, _utxoPos, _token, _amount)
+
+
+#
 # Public Functions
 #
 
