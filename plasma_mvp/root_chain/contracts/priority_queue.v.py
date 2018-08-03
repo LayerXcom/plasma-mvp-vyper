@@ -15,7 +15,7 @@ def percUp(_i: uint256):
     j: uint256 = _i
     newVal: uint256 = self.heapList[_i]
     for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        k :uint256 = floor(convert(_i, "decimal") / 2.0)
+        k: uint256 = convert(floor(convert(_i, "decimal") / 2.0), "uint256")
         if not newVal < self.heapList[k]:
             break
         self.heapList[_i] = self.heapList[k]
