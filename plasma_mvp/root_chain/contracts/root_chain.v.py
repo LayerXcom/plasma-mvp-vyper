@@ -85,7 +85,7 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
     check1: bool = True
     check2: bool = True
 
-    check1 = self.ecrecoverSig(_txhash, sig1) == self.ecrecoverSig(confirmationHash, confSig1)
+    check1 = self.ecrecoverSig(_txHash, sig1) == self.ecrecoverSig(confirmationHash, confSig1)
     if _blknum2 > 0:
         confSig2: bytes[1024] = slice(_sigs, 195, 65)
         check2 = self.ecrecoverSig(_txHash, sig2) == self.ecrecoverSig(confirmationHash, confSig2)
