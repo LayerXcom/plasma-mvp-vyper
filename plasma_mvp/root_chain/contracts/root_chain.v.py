@@ -223,8 +223,8 @@ def finalizeExits(_token: address):
 # @dev Queries the child chain.
 @public
 @constant
-def getChildChain(_blockNumber: uint256) -> [bytes32, uint256]:  # how to return multiple value?
-    return [self.childChain[_blockNumber].root, self.childChain[_blockNumber].blockTimestamp]
+def getChildChain(_blockNumber: uint256) -> (bytes32, uint256):
+    return (self.childChain[_blockNumber].root, self.childChain[_blockNumber].blockTimestamp)
 
 # @dev Determines the next deposit block number.
 # @return Block number to be given to the next deposit block.
