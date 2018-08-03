@@ -14,31 +14,33 @@ def setup() -> bool:
 def percUp(_i: uint256):
     j: uint256 = _i
     newVal: uint256 = self.heapList[_i]
-    for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        k: uint256 = convert(floor(convert(_i, "decimal") / 2.0), "uint256")
+    i :uint256 = _i
+    for _ in range(10000): # TODO: Right way? In addition, range() does not accept variable?
+        k: uint256 = convert(floor(convert(i, "decimal") / 2.0), "uint256")
         if not newVal < self.heapList[k]:
             break
-        self.heapList[_i] = self.heapList[k]
-        _i = k
+        self.heapList[i] = self.heapList[k]
+        i = k
 
-    if _i != j:
-        self.heapList[_i] = newVal
+    if i != j:
+        self.heapList[i] = newVal
 
 
 @private
 def percDown(_i: uint256):
     j: uint256 = _i
     newVal: uint256 = self.heapList[_i]
+    i :uint256 = _i
     mc: uint256 = self.minChild(_i)
-    for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
+    for _ in range(10000): # TODO: Right way? In addition, range() does not accept variable?
         if not mc <= self.currentSize and newVal > self.heapList[mc]:
             break
-        self.heapList[_i] = self.heapList[mc]
-        _i = mc
-        mc = self.minChild(_i)
+        self.heapList[i] = self.heapList[mc]
+        i = mc
+        mc = self.minChild(i)
 
-    if _i != j:
-        self.heapList[_i] = newVal
+    if i != j:
+        self.heapList[i] = newVal
 
 @public
 def insert(_k: uint256) -> bool:
