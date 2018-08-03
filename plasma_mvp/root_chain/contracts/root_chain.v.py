@@ -136,7 +136,7 @@ def startFeeExit(_token: address, _amount: uint256):
 
 # @dev Starts to exit a specified utxo.
 @public
-def startExit(_utxoPos: uint256, _txBytes: bytes, _proof: bytes, _sigs: bytes):
+def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _sigs: bytes[1024]):
     blknum: uint256 = _utxoPos / 1000000000
     txindex: uint256 = (_utxoPos % 1000000000) / 10000
     oindex: uint256 = _utxoPos - blknum * 1000000000 - txindex * 10000
@@ -159,7 +159,7 @@ def startExit(_utxoPos: uint256, _txBytes: bytes, _proof: bytes, _sigs: bytes):
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 @public
-def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes, _proof: bytes, _sigs: bytes, _confirmationSig: bytes):
+def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _sigs: bytes[1024], _confirmationSig: bytes[1024]):
     # The position of the exiting utxo
     eUtxoPos: uint256 = self.getUtxoPos(_txBytes, _eUtxoIndex)
     # The output position of the challenging utxo
@@ -282,7 +282,7 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
 
 @private
 @constant
-def createExitingTx(_exitingTxBytes: bytes, _oindex: uint256) -> exitingTx:
+def createExitingTx(_exitingTxBytes: bytes[1024], _oindex: uint256) -> exitingTx:
     # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
     txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
     return ExitingTx({
@@ -294,7 +294,7 @@ def createExitingTx(_exitingTxBytes: bytes, _oindex: uint256) -> exitingTx:
 
 @private
 @constant
-def getUtxoPos(_challengingTxBytes: bytes, _oIndex: uint256) -> uint256:
+def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
     # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
     txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
     oIndexShift: uint256 = _oIndex * 3
@@ -302,11 +302,11 @@ def getUtxoPos(_challengingTxBytes: bytes, _oIndex: uint256) -> uint256:
 
 @private
 @constant
-def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes) -> bool:
+def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes[1024]) -> bool:
     assert len(_sigs) % 65 == 0 and len(_sigs) <= 260
-    sig1: bytes = slice(_sigs, 0, 65)
-    sig2: bytes = slice(_sigs, 65, 65)
-    confSig1: bytes = slice(_sigs, 130, 65)
+    sig1: bytes[1024] = slice(_sigs, 0, 65)
+    sig2: bytes[1024] = slice(_sigs, 65, 65)
+    confSig1: bytes[1024] = slice(_sigs, 130, 65)
     confirmationHash: bytes32 = sha3(concat(_txHash, _rootHash))
 
     check1: bool = true
@@ -314,7 +314,7 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
 
     check1 = self.ecrecoverSig(_txhash, sig1) == self.ecrecoverSig(confirmationHash, confSig1)
     if _blknum2 > 0:
-        confSig2: bytes = slice(_sigs, 195, 65)
+        confSig2: bytes[1024] = slice(_sigs, 195, 65)
         check2 = self.ecrecoverSig(_txHash, sig2) == self.ecrecoverSig(confirmationHash, confSig2)
 
     return check1 and check2
@@ -322,7 +322,7 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
 
 @private
 @constant
-def ecrecoverSig(_txHash: bytes32, _sig: bytes) -> address:
+def ecrecoverSig(_txHash: bytes32, _sig: bytes[1024]) -> address:
     assert len(_sig) == 65
     # Perhaps convert() can only convert 'bytes' to 'int128', so in that case here should be fixed.
     r: uint256 = convert(slice(_sig, 0, 32), uint256)
@@ -333,7 +333,7 @@ def ecrecoverSig(_txHash: bytes32, _sig: bytes) -> address:
 
 @private
 @constant
-def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes) -> bool:
+def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes[1024]) -> bool:
     assert len(_proof) == 512
     proofElement: bytes32
     computedHash: bytes32 = _leaf
