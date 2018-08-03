@@ -287,7 +287,12 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
 
 @private
 @constant
-def createExitingTx(_exitingTxBytes: bytes[1024], _oindex: uint256) -> exitingTx:
+def createExitingTx(_exitingTxBytes: bytes[1024], _oindex: uint256) -> {
+        exitor: address,
+        token: address,
+        amount: uint256,
+        inputCount: uint256
+    }:
     # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
     txList: [13] = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
     return {
