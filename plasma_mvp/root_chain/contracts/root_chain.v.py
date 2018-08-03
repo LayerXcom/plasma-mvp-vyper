@@ -287,7 +287,7 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _si
     assert self.checkSigs(sha3(_txBytes), root, inputCount, _sigs)
     assert self.checkMembership(merkleHash, txindex, root, _proof) # TODO: _leaf is correct?
 
-    self.addExitToQueue(_utxoPos, exitor, token, amount, childChain[blknum].blockTimestamp)
+    self.addExitToQueue(_utxoPos, exitor, token, amount, self.childChain[blknum].blockTimestamp)
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 @public
