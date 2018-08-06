@@ -175,7 +175,7 @@ def __init__(_priorityQueueTemplate: address):
 def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: uint256(sec, positional)):
     assert self.exitsQueues[_token] != ZERO_ADDRESS
     # Maximum _created_at + 2 weeks or block.timestamp + 1 week
-    exitable_at: int128(sec) = max(convert(_created_at, "int128") + 2 * 7 * 24 * 60 * 60, convert(block.timestamp, 'int128') + 1 * 7 * 24 * 60 * 60)
+    exitable_at: int128(sec) = max(convert(_created_at, "int128") + 2 * 7 * 24 * 60 * 60, convert(block.timestamp, "int128") + 1 * 7 * 24 * 60 * 60)
     # "priority" represents priority of　exitable_at over utxo position. 
     priority: uint256 = bitwise_or(shift(convert(exitable_at, "uint256"), 128), _utxoPos)
     assert _amount > 0
