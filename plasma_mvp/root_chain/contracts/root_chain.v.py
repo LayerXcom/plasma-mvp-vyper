@@ -139,10 +139,10 @@ def getExit(_utxoPos: uint256) -> (address, address, uint256):
 # @dev Determines the next exit to be processed.
 @public
 @constant
-def getNextExit(_token: address) -> (uint256, uint256):
+def getNextExit(_token: address) -> (uint256, uint256(sec, positional)):
     priority: uint256 = PriorityQueue(self.exitsQueues[_token]).getMin()
     utxoPos: uint256 = convert(convert(priority, "int128"), "uint256")
-    exitable_at: uint256 = shift(priority, 128)
+    exitable_at: uint256(sec, positional) = shift(priority, 128)
     return utxoPos, exitable_at
 
 
@@ -174,10 +174,10 @@ def __init__(_priorityQueueTemplate: address):
 @private
 def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: uint256(sec, positional)):
     assert self.exitsQueues[_token] != ZERO_ADDRESS
-    # Maximum _created_at + 2 weeks or block.timestamp + 1 week
-    exitable_at: int128(sec) = max(convert(_created_at, "int128") + 2 * 7 * 24 * 60 * 60, convert(block.timestamp, "int128") + 1 * 7 * 24 * 60 * 60)
-    # "priority" represents priority of　exitable_at over utxo position. 
-    priority: uint256 = bitwise_or(shift(convert(exitable_at, "uint256"), 128), _utxoPos)
+    # exitable_at is the bigger one - _created_at + 2 weeks and block.timestamp + 1 week
+    exitable_at: uint256(sec, positional) = max(_created_at + 2 * 7 * 24 * 60 * 60, block.timestamp + 1 * 7 * 24 * 60 * 60)
+    # "priority" represents priority of　exitable_at over utxo position.
+    priority: uint256 = bitwise_or(shift(exitable_at, 128), _utxoPos)
     assert _amount > 0
     assert self.exits[_utxoPos].amount == 0
     assert PriorityQueue(self.exitsQueues[self.ETH_ADDRESS]).insert(priority)
@@ -321,7 +321,7 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024
 @public
 def finalizeExits(_token: address):   
     utxoPos: uint256
-    exitable_at: uint256
+    exitable_at: uint256(sec, positional)
     (utxoPos, exitable_at) = self.getNextExit(_token)
 
     currentExit: {
@@ -330,7 +330,7 @@ def finalizeExits(_token: address):
         amount: uint256
     } = self.exits[utxoPos]
     for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        if not convert(exitable_at, "int128") < as_unitless_number(convert(block.timestamp, "int128")):
+        if not exitable_at < block.timestamp:
             break
         currentExit = self.exits[utxoPos]
         
