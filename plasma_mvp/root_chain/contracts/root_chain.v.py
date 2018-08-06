@@ -139,10 +139,11 @@ def getExit(_utxoPos: uint256) -> (address, address, uint256):
 # @dev Determines the next exit to be processed.
 @public
 @constant
-def getNextExit(_token: address) -> (uint256, uint256(sec, positional)):
+def getNextExit(_token: address) -> (uint256, uint256):
     priority: uint256 = PriorityQueue(self.exitsQueues[_token]).getMin()
+    # NOTE: Is this double convert needed?
     utxoPos: uint256 = convert(convert(priority, "int128"), "uint256")
-    exitable_at: uint256(sec, positional) = shift(priority, -128)
+    exitable_at: uint256 = shift(priority, -128)
     return utxoPos, exitable_at
 
 
