@@ -173,10 +173,10 @@ def __init__(_priorityQueueTemplate: address):
 
 # @dev Adds an exit to the exit queue.
 @private
-def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: uint256(sec, positional)):
+def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: timestamp):
     assert self.exitsQueues[_token] != ZERO_ADDRESS
     # exitable_at is the bigger one - _created_at + 2 weeks and block.timestamp + 1 week
-    exitable_at: uint256(sec, positional) = max(_created_at + 2 * 7 * 24 * 60 * 60, block.timestamp + 1 * 7 * 24 * 60 * 60)
+    exitable_at: uint256 = as_unitless_number(max(_created_at + 2 * 7 * 24 * 60 * 60, block.timestamp + 1 * 7 * 24 * 60 * 60))
     # "priority" represents priority of　exitable_at over utxo position.
     priority: uint256 = bitwise_or(shift(exitable_at, 128), _utxoPos)
     assert _amount > 0
@@ -322,7 +322,7 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024
 @public
 def finalizeExits(_token: address):   
     utxoPos: uint256
-    exitable_at: uint256(sec, positional)
+    exitable_at: uint256
     (utxoPos, exitable_at) = self.getNextExit(_token)
 
     currentExit: {
@@ -331,7 +331,7 @@ def finalizeExits(_token: address):
         amount: uint256
     } = self.exits[utxoPos]
     for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        if not exitable_at < block.timestamp:
+        if not exitable_at < as_unitless_number(block.timestamp):
             break
         currentExit = self.exits[utxoPos]
         
