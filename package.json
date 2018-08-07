@@ -13,6 +13,7 @@
     "ethereumjs-util": "^5.2.0",
     "rlp": "^2.1.0",
     "truffle": "^4.1.13",
-    "truper": "^0.0.2"
+    "truper": "^0.0.2",
+    "web3": "^1.0.0-beta.35"
   }
 }
