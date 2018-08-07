@@ -1,7 +1,7 @@
 
 
 const RootChain = artifacts.require("root_chain.vyper")
-const RLP = requre("rlp");
+const RLP = require("rlp");
 const BigNumber = web3.BigNumber;
 
 require('chai')
@@ -11,7 +11,7 @@ require('chai')
 
 
 contract("RootChain", ([owner, priorityQueueAddr]) => {
-    const depositAMount = new web3.BigNumber(web3.toWei(0.001, 'ether'));
+    const depositAmount = new web3.BigNumber(web3.toWei(0.001, 'ether'));
 
     beforeEach(async () => {
         rootChain = await RootChain.new(priorityQueueAddr, { from: owner });
