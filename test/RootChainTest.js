@@ -1,5 +1,3 @@
-const injectInTruffle = 'sol-trace'.injectInTruffle
-injectInTruffle(web3, artifacts)
 
 const utils = require("ethereumjs-util");
 
