@@ -1,3 +1,6 @@
+const injectInTruffle = 'sol-trace'.injectInTruffle
+injectInTruffle(web3, artifacts)
+
 const utils = require("ethereumjs-util");
 
 const RootChain = artifacts.require("root_chain.vyper");
