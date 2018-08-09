@@ -23,6 +23,7 @@ exits: {
 
 exitsQueues: address[address]
 
+# NOTE: Constant numbers should be stored in storage or hard coded?
 CHILD_BLOCK_INTERVAL: uint256
 ETH_ADDRESS: address
 
