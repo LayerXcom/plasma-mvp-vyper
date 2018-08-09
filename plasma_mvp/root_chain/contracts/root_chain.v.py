@@ -102,7 +102,7 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
 @private
 @constant
 def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes[1024]) -> bool:
-    assert len(_proof) == 512
+    assert len(_proof) == 512 # TODO: len(bytes[1024])
     proofElement: bytes32
     computedHash: bytes32 = _leaf
     index: uint256 = _index
