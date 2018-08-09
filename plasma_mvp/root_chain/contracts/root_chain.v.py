@@ -269,7 +269,7 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
 @public
 def startFeeExit(_token: address, _amount: uint256):
     assert msg.sender == self.operator
-    self.addExitToQueue(self.currentFeeExit, msg.sender, _token, _amount, block.timestamp)
+    self.addExitToQueue(self.currentFeeExit, msg.sender, _token, _amount, block.timestamp + 1)
     self.currentFeeExit += 1
     
 
