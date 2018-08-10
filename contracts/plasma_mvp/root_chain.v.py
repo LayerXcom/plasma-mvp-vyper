@@ -23,6 +23,7 @@ exits: {
 
 exitsQueues: address[address]
 
+# NOTE: Constant numbers should be stored in storage or hard coded?
 CHILD_BLOCK_INTERVAL: uint256
 ETH_ADDRESS: address
 
@@ -54,7 +55,6 @@ def createExitingTx(_exitingTxBytes: bytes[1024], _oIndex: uint256) -> (address,
 def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
     # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
     txList = RLPList(_challengingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
-    oIndexShift: uint256 = _oIndex * 3
     if _oIndex == 0:
         return txList[0] + txList[1] + txList[2]
     if _oIndex == 1:
@@ -64,13 +64,19 @@ def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
 @private
 @constant
 def ecrecoverSig(_txHash: bytes32, _sig: bytes[1024]) -> address:
-    assert len(_sig) == 65
-    # Perhaps convert() can only convert 'bytes' to 'int128', so in that case here should be fixed.
-    r: uint256 = convert(extract32(_sig, 0, type=int128), "uint256")
-    s: uint256 = convert(extract32(_sig, 32, type=int128), "uint256")
-    v: uint256 = convert(extract32(_sig, 64, type=int128), "uint256") # TODO: make sure this code work correctly
-
-    return ecrecover(_txHash, v, r, s)
+    # ref. https://gist.github.com/axic/5b33912c6f61ae6fd96d6c4a47afde6d
+    # The signature format is a compact form of:
+    # {bytes32 r}{bytes32 s}{uint8 v}
+    if len(_sig) == 65: # TODO: len(bytes[1024]) is always 1024?
+        return ZERO_ADDRESS
+    r: uint256 = convert(extract32(_sig, 0, type=bytes32), "uint256")
+    s: uint256 = convert(extract32(_sig, 32, type=bytes32), "uint256")
+    v: uint256 = convert(extract32(_sig, 64, type=int128), "uint256")
+    # Version of signature should be 27 or 28, but 0 and 1 are also possible versions.
+    if not convert(v, "int128") in [1, 2, 27, 28]:
+        return ZERO_ADDRESS
+    else:
+        return ecrecover(_txHash, v, r, s)
 
 
 @private
@@ -96,7 +102,7 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
 @private
 @constant
 def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes[1024]) -> bool:
-    assert len(_proof) == 512
+    assert len(_proof) == 512 # TODO: len(bytes[1024])
     proofElement: bytes32
     computedHash: bytes32 = _leaf
     index: uint256 = _index
@@ -251,11 +257,10 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
                                     convert(_token, "bytes32"),
                                     convert(_amount, "bytes32")
                                 )
-                        )
+                            )
     # Check that the block root of the UTXO position is same as depositHash.
     assert root == depositHash
 
-    # TODO: Is the converting correct?
     self.addExitToQueue(_depositPos, msg.sender, _token, _amount, self.childChain[blknum].blockTimestamp)
 
 # @dev Allows the operator withdraw any allotted fees. Starts an exit to avoid theft.
@@ -264,7 +269,7 @@ def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
 @public
 def startFeeExit(_token: address, _amount: uint256):
     assert msg.sender == self.operator
-    self.addExitToQueue(self.currentFeeExit, msg.sender, _token, _amount, block.timestamp)
+    self.addExitToQueue(self.currentFeeExit, msg.sender, _token, _amount, block.timestamp + 1)
     self.currentFeeExit += 1
     
 

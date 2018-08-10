@@ -7,7 +7,6 @@ currentSize: uint256
 @public
 def setup() -> bool:
     self.owner = msg.sender
-    self.currentSize = 0
     return True
 
 @private
@@ -55,8 +54,9 @@ def percDown(_i: uint256):
 @public
 def insert(_k: uint256) -> bool:
     assert msg.sender == self.owner
-    self.heapList[self.currentSize] = _k
+    # NOTE: heapList[0] is not used
     self.currentSize += 1
+    self.heapList[self.currentSize] = _k
     self.percUp(self.currentSize)
     return True
 
