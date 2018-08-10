@@ -59,7 +59,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             utxoPos.should.be.bignumber.equal(this.expectedUtxoPos);
             exitableAt.should.be.bignumber.equal(expectedExitableAt);
-            this.rootChain.getExit(utxoPos).to.have.ordered.members([owner, ZERO_ADDRESS, depositAmount])
+            (await this.rootChain.getExit(utxoPos)).to.have.ordered.members([owner, ZERO_ADDRESS, depositAmount])
         });
 
         it("should fail if same deposit is exited twice", async () => {
@@ -84,10 +84,11 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         it("should be equal utxoPos and exitableAt", async () => {
             const blknum = await this.rootChain.getDepositBlock();
             await this.rootChain.deposit({ depositAmount, from: owner });
-            const expectedUtxoAt = await this.rootChain.currentFeeExit();
-            const expectedExitableAt = await (await latestTime()) + duration.weeks(2) + 1;
+            const expectedUtxoAt = await this.rootChain.getCurrentFeeExit();
+            const expectedExitableAt = (await latestTime()) + duration.weeks(2) + 1;
 
-            this.rootChain.currentFeeExit().should.be.bigNumber.equal(new BigNumber(1));
+            // Number(this.rootChain.getCurrentFeeExit()).should.equal(1);
+            (await this.rootChain.getCurrentFeeExit()).should.be.bignumber.equal(new BigNumber(1));
         });
 
     });
