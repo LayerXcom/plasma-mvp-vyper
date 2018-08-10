@@ -85,6 +85,15 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const expectedUtxoPos = blknum.mul(new BigNumber(1000000000));
 
             await expectThrow(this.rootChain.startDepositExit(expectedUtxoPos * 2, ZERO_ADDRESS, depositAmountNum), EVMRevert);
+        });
+
+        it("should fail if value given isvnot equal to deposited value", async () => {
+            await this.rootChain.deposit({ depositAmount, from: owner });
+            const blknum = await this.rootChain.getDepositBlock();
+            await this.rootChain.deposit({ depositAmount, from: owner });
+            const expectedUtxoPos = blknum.mul(new BigNumber(1000000000));
+
+            await expectThrow(this.rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmountNum + 1), EVMRevert);
         })
     });
 
