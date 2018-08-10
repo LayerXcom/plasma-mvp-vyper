@@ -1380,42 +1380,8 @@
       "links": {},
       "address": "0x8cdaf0cd259887258bc13a92c0a6da92698644c0",
       "transactionHash": "0xdc0b25232b7ecc2acc763178d657a969f7084a738d3d80a6c3a1e73ac621d944"
-    },
-    "5777": {
-      "events": {},
-      "links": {},
-      "address": "0xa93e8ffa22bf46284239a2dd7e092a309fb0adbf",
-      "transactionHash": "0xdc0b25232b7ecc2acc763178d657a969f7084a738d3d80a6c3a1e73ac621d944"
-    },
-    "1533861762978": {
-      "events": {},
-      "links": {},
-      "address": "0x179743a82135a18c55dfe33d2efb765904a156e0",
-      "transactionHash": "0x2f38c8c3664d09f9c0042827ca7e5a741bd1092ce07d363873b8f38140a0b5d3"
-    },
-    "1533883407375": {
-      "events": {},
-      "links": {},
-      "address": "0xb22fb6ffa937d02ba82d6fcccd5f616d4fbff690",
-      "transactionHash": "0x2f38c8c3664d09f9c0042827ca7e5a741bd1092ce07d363873b8f38140a0b5d3"
-    },
-    "1533883720106": {
-      "events": {},
-      "links": {},
-      "address": "0xa3639182c0f65edfeb846cae10a00c1175794bed",
-      "transactionHash": "0x2f38c8c3664d09f9c0042827ca7e5a741bd1092ce07d363873b8f38140a0b5d3"
-    },
-    "1533885113480": {
-      "events": {},
-      "links": {},
-      "address": "0xddb6474bd86b1abca5cbb724657be5eef6b2f672",
-      "transactionHash": "0x2f38c8c3664d09f9c0042827ca7e5a741bd1092ce07d363873b8f38140a0b5d3"
     }
   },
   "schemaVersion": "2.0.1",
-<<<<<<< HEAD
-  "updatedAt": "2018-08-10T07:12:49.401Z"
-=======
-  "updatedAt": "2018-08-10T07:12:00.990Z"
->>>>>>> 98a56977f48a9f427e0c1154fc9a39940fc4bd05
+  "updatedAt": "2018-08-10T07:22:58.293Z"
 }
