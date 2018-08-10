@@ -81,14 +81,14 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     });
 
     describe("startFeeExit", () => {
-        it("should be equal utxoPos and exitableAt"), async () => {
-            const blknum = await this.rootChain.getDepositBlkock();
+        it("should be equal utxoPos and exitableAt", async () => {
+            const blknum = await this.rootChain.getDepositBlock();
             await this.rootChain.deposit({ depositAmount, from: owner });
             const expectedUtxoAt = await this.rootChain.currentFeeExit();
             const expectedExitableAt = await (await latestTime()) + duration.weeks(2) + 1;
 
-            this.rootChain.currentFeeExit().should.be.bigNumber.equal(new BigNumber(1))
-        }
+            this.rootChain.currentFeeExit().should.be.bigNumber.equal(new BigNumber(1));
+        });
 
     });
 
