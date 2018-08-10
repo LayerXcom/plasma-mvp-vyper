@@ -23,10 +23,6 @@ exits: {
 
 exitsQueues: address[address]
 
-# NOTE: Constant numbers should be stored in storage or hard coded?
-CHILD_BLOCK_INTERVAL: uint256
-ETH_ADDRESS: address
-
 operator: address
 currentChildBlock: uint256
 currentDepositBlock: uint256
@@ -134,7 +130,8 @@ def getChildChain(_blockNumber: uint256) -> (bytes32, uint256):
 @public
 @constant
 def getDepositBlock() -> uint256:
-    return self.currentChildBlock - self.CHILD_BLOCK_INTERVAL + self.currentDepositBlock
+    # 1000 represents child block interval
+    return self.currentChildBlock - 1000 + self.currentDepositBlock
 
 # @dev Returns information about an exit.
 @public
@@ -159,9 +156,7 @@ def getNextExit(_token: address) -> (uint256, uint256):
 def __init__(_priorityQueueTemplate: address):
     assert _priorityQueueTemplate != ZERO_ADDRESS
     self.operator = msg.sender
-    self.CHILD_BLOCK_INTERVAL = 1000
-    self.ETH_ADDRESS = ZERO_ADDRESS
-    self.currentChildBlock = self.CHILD_BLOCK_INTERVAL
+    self.currentChildBlock = 1000 # child block interval
     self.currentDepositBlock = 1
     self.currentFeeExit = 1    
 
@@ -169,8 +164,8 @@ def __init__(_priorityQueueTemplate: address):
     priorityQueue: address = create_with_code_of(_priorityQueueTemplate)    
     # Force executing as a constructor
     assert PriorityQueue(priorityQueue).setup()
-    # ETH_ADDRESS means currently support only ETH.
-    self.exitsQueues[self.ETH_ADDRESS] = priorityQueue
+    # ZERO_ADDRESS means ETH's address(currently support only ETH)
+    self.exitsQueues[ZERO_ADDRESS] = priorityQueue
 
 
 #
@@ -187,7 +182,7 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
     priority: uint256 = bitwise_or(shift(exitable_at, 128), _utxoPos)
     assert _amount > 0
     assert self.exits[_utxoPos].amount == 0
-    assert PriorityQueue(self.exitsQueues[self.ETH_ADDRESS]).insert(priority)
+    assert PriorityQueue(self.exitsQueues[ZERO_ADDRESS]).insert(priority) # ZERO_ADDRESS means ETH's address
     self.exits[_utxoPos] = {
         owner: _exitor,
         token: _token,
@@ -212,7 +207,7 @@ def submitBlock(_root: bytes32):
     }
 
     # Update block numbers.
-    self.currentChildBlock += self.CHILD_BLOCK_INTERVAL
+    self.currentChildBlock += 1000 # child block interval
     self.currentDepositBlock = 1
 
     log.BlockSubmitted(_root, block.timestamp) 
@@ -221,12 +216,12 @@ def submitBlock(_root: bytes32):
 @public
 @payable
 def deposit():
-    assert self.currentDepositBlock < self.CHILD_BLOCK_INTERVAL
+    assert self.currentDepositBlock < 1000 # child block interval
     
     root: bytes32 = sha3(
                         concat(
                             convert(msg.sender, "bytes32"),
-                            convert(self.ETH_ADDRESS, "bytes32"),
+                            convert(ZERO_ADDRESS, "bytes32"), # ZERO_ADDRESS means ETH's address
                             convert(msg.value, "bytes32")
                         )
                     )                
@@ -238,7 +233,7 @@ def deposit():
     }
     self.currentDepositBlock += 1
 
-    log.Deposit(msg.sender, depositBlock, self.ETH_ADDRESS, msg.value)
+    log.Deposit(msg.sender, depositBlock, ZERO_ADDRESS, msg.value)
 
 # @dev Starts an exit from a deposit
 # @param _depositPos UTXO position of the deposit
@@ -248,7 +243,7 @@ def deposit():
 def startDepositExit(_depositPos: uint256, _token: address, _amount: uint256):
     blknum: uint256 = _depositPos / 1000000000
     # Check that the given UTXO is a deposit
-    assert blknum % self.CHILD_BLOCK_INTERVAL != 0
+    assert blknum % 1000 != 0
 
     root: bytes32 = self.childChain[blknum].root
     depositHash: bytes32 = sha3(
@@ -340,7 +335,7 @@ def finalizeExits(_token: address):
             break
         currentExit = self.exits[utxoPos]
         
-        # Allowed only ETH
+        # Only ETH is allowed
         assert _token == ZERO_ADDRESS
         # Send the token amount of the exiting utxo to the owner of the utxo
         send(currentExit.owner, as_wei_value(currentExit.amount, "wei"))
