@@ -77,9 +77,9 @@ def ecrecoverSig(_txHash: bytes32, _sig: bytes[65]) -> address:
 @constant
 def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes[1024]) -> bool:
     assert len(_sigs) % 65 == 0 and len(_sigs) <= 260
-    sig1: bytes[1024] = slice(_sigs, start=0, len=65)
-    sig2: bytes[1024] = slice(_sigs, start=65, len=65)
-    confSig1: bytes[1024] = slice(_sigs, start=130, len=65)
+    sig1: bytes[65] = slice(_sigs, start=0, len=65)
+    sig2: bytes[65] = slice(_sigs, start=65, len=65)
+    confSig1: bytes[65] = slice(_sigs, start=130, len=65)
     confirmationHash: bytes32 = sha3(concat(_txHash, _rootHash))
 
     check1: bool = True
@@ -87,7 +87,7 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
 
     check1 = self.ecrecoverSig(_txHash, sig1) == self.ecrecoverSig(confirmationHash, confSig1)
     if _blknum2 > 0:
-        confSig2: bytes[1024] = slice(_sigs, start=195, len=65)
+        confSig2: bytes[65] = slice(_sigs, start=195, len=65)
         check2 = self.ecrecoverSig(_txHash, sig2) == self.ecrecoverSig(confirmationHash, confSig2)
 
     return check1 and check2
@@ -291,7 +291,7 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _si
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 @public
-def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _sigs: bytes[1024], _confirmationSig: bytes[1024]):
+def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _sigs: bytes[1024], _confirmationSig: bytes[65]):
     # The position of the exiting utxo
     eUtxoPos: uint256 = self.getUtxoPos(_txBytes, _eUtxoIndex)
     # The output position of the challenging utxo
