@@ -53,7 +53,7 @@ contract("RootChain", ([owner, priorityQueueAddr]) => {
 
             utxo_pos.should.be.bignumber.equal(expectedUtxoPos);
             exitable_at.should.be.bignumber.equal(expectedExitable_at);
-            this.rootChain.getExit(utxo_pos).should.be.bignumber.equal([owner, Z])
+            this.rootChain.getExit(utxo_pos).should.be.bignumber.equal([owner, ZERO_ADDRESS, depositAmount])
 
         })
     });
