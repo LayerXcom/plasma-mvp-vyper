@@ -21,7 +21,7 @@ contract("RootChain", ([owner, priorityQueueAddr]) => {
     const ZERO_ADDRESS = 0x0000000000000000000000000000000000000000;
 
     beforeEach(async () => {
-        rootChain = await RootChain.new(priorityQueueAddr, { from: owner });
+        this.rootChain = await RootChain.new(priorityQueueAddr, { from: owner });
     });
 
     describe("submitBlock", () => {
@@ -32,27 +32,27 @@ contract("RootChain", ([owner, priorityQueueAddr]) => {
 
     describe("deposit", () => {
         it("should accespt deposit", async () => {
-            const blknum = await rootChain.getDepositBlock();
-            await rootChain.deposit({ value: depositAmount, from: owner });
-            const depositBlockNum = await rootChain.getDepositBlock();
+            const blknum = await this.rootChain.getDepositBlock();
+            await this.rootChain.deposit({ value: depositAmount, from: owner });
+            const depositBlockNum = await this.rootChain.getDepositBlock();
             depositBlockNum.should.be.bignumber.equal(blknum.plus(new BigNumber(1)));
         })
     });
 
     describe("startDepositExit", () => {
         it("should be equal ", async () => {
-            const two_weeks = 60 * 60 * 24 * 7 * 2;
-            await rootChain.deposit({ depositAmount, from: owner });
-            const blknum = await rootChain.getDepositBlock();
-            await rootChain.deposit({ depositAmount, from: owner });
-            const expectedUtxoPos = Number(blknum) * 1000000000;
-            const expectedExitable_at = (await lastestTime()) + two_weeks;
+            await this.rootChain.deposit({ depositAmount, from: owner });
+            const blknum = await this.rootChain.getDepositBlock();
+            await this.rootChain.deposit({ depositAmount, from: owner });
 
-            await rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
-            const [utxo_pos, exitable_at] = await rootChain.getNextExit(ZERO_ADDRESS);
+            const expectedUtxoPos = blknum.mul(new BigNumber(1000000000));
+            const expectedExitable_at = new BigNumber((await lastestTime()) + duration.weeks(2));
+
+            await this.rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
+            const [utxo_pos, exitable_at] = await this.rootChain.getNextExit(ZERO_ADDRESS);
 
             utxo_pos.should.be.bignumber.equal(expectedUtxoPos);
-            exitable_at.should.equal(expectedExitable_at);
+            exitable_at.should.be.bignumber.equal(expectedExitable_at);
 
         })
     });
