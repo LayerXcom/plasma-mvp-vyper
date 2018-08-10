@@ -182,7 +182,7 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
     priority: uint256 = bitwise_or(shift(exitable_at, 128), _utxoPos)
     assert _amount > 0
     assert self.exits[_utxoPos].amount == 0
-    assert PriorityQueue(self.exitsQueues[self.ETH_ADDRESS]).insert(priority)
+    assert PriorityQueue(self.exitsQueues[ZERO_ADDRESS]).insert(priority) # ZERO_ADDRESS means ETH's address
     self.exits[_utxoPos] = {
         owner: _exitor,
         token: _token,
@@ -221,7 +221,7 @@ def deposit():
     root: bytes32 = sha3(
                         concat(
                             convert(msg.sender, "bytes32"),
-                            convert(ZERO_ADDRESS, "bytes32"),
+                            convert(ZERO_ADDRESS, "bytes32"), # ZERO_ADDRESS means ETH's address
                             convert(msg.value, "bytes32")
                         )
                     )                
@@ -335,7 +335,7 @@ def finalizeExits(_token: address):
             break
         currentExit = self.exits[utxoPos]
         
-        # Allowed only ETH
+        # Only ETH is allowed
         assert _token == ZERO_ADDRESS
         # Send the token amount of the exiting utxo to the owner of the utxo
         send(currentExit.owner, as_wei_value(currentExit.amount, "wei"))
