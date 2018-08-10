@@ -87,7 +87,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const expectedUtxoAt = await this.rootChain.getCurrentFeeExit();
             const expectedExitableAt = (await latestTime()) + duration.weeks(2) + 1;
 
-            // Number(this.rootChain.getCurrentFeeExit()).should.equal(1);
             (await this.rootChain.getCurrentFeeExit()).should.be.bignumber.equal(new BigNumber(1));
         });
 
