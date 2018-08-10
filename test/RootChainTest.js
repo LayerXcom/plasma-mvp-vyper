@@ -19,9 +19,10 @@ require('chai')
 
 contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     const depositAmount = new BigNumber(web3.toWei(0.1, 'ether'));
+    const depositAmountNum = Number(depositAmount);
     const utxoOrder = new BigNumber(1000000000);
 
-    const depositAmountNum = 0.1 * 10 ** 18;
+
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
     beforeEach(async () => {
@@ -88,6 +89,10 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const expectedExitableAt = (await latestTime()) + duration.weeks(2) + 1;
 
             (await this.rootChain.getCurrentFeeExit()).should.be.bignumber.equal(new BigNumber(1));
+            await this.rootChain.startFeeExit(ZERO_ADDRESS, depositAmountNum);
+            (await this.rootChain.getCurrentFeeExit()).should.be.bignumber.equal(new BigNumber(2));
+
+            const [utxoPos, exitableAt] = await this.rootChain.getNextExit(ZERO_ADDRESS);
         });
 
     });
