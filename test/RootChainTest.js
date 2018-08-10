@@ -1,6 +1,8 @@
+const pify = require('pify');
 const utils = require("ethereumjs-util");
-const { lastestTime } = require('./helpers/latestTime');
+const { latestTime } = require('./helpers/latestTime');
 const { increaseTimeTo, duration } = require('./helpers/increaseTime');
+
 
 const RootChain = artifacts.require("root_chain.vyper");
 const PriorityQueue = artifacts.require("priority_queue.vyper");
@@ -40,13 +42,13 @@ contract("RootChain", ([owner, priorityQueueAddr]) => {
     });
 
     describe("startDepositExit", () => {
-        it("should be equal ", async () => {
+        it("should be equal utxo_pos and exitable_at ", async () => {
             await this.rootChain.deposit({ depositAmount, from: owner });
             const blknum = await this.rootChain.getDepositBlock();
             await this.rootChain.deposit({ depositAmount, from: owner });
 
             const expectedUtxoPos = blknum.mul(new BigNumber(1000000000));
-            const expectedExitable_at = new BigNumber((await lastestTime()) + duration.weeks(2));
+            const expectedExitable_at = (await latestTime()) + duration.weeks(2);
 
             await this.rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
             const [utxo_pos, exitable_at] = await this.rootChain.getNextExit(ZERO_ADDRESS);
@@ -55,7 +57,13 @@ contract("RootChain", ([owner, priorityQueueAddr]) => {
             exitable_at.should.be.bignumber.equal(expectedExitable_at);
             this.rootChain.getExit(utxo_pos).should.be.bignumber.equal([owner, ZERO_ADDRESS, depositAmount])
 
-        })
+        });
+
+        it("should reject if same deposit is exited twice", async () => {
+
+            // await expectThrow(this.rootChain.)
+        });
+
     });
 
     describe("startFeeExit", () => {
