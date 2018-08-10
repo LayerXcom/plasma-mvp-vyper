@@ -283,7 +283,7 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sig
     merkleHash: bytes32 = sha3(concat(txHash, slice(_sigs, start=0, len=130)))
 
     assert self.checkSigs(txHash, root, inputCount, _sigs)
-    assert self.checkMembership(txHash, txindex, root, _proof)
+    assert self.checkMembership(merkleHash, txindex, root, _proof)
 
     self.addExitToQueue(_utxoPos, exitor, token, amount, self.childChain[blknum].blockTimestamp)
 
@@ -308,7 +308,7 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024
     # if the utxo is a double spend, the confirmation signature was made by the owner of the exiting utxo.
     assert owner == self.ecrecoverSig(confirmationHash, _confirmationSig)
     # Check the merkle proof of the transaction used to challenge
-    assert self.checkMembership(txHash, txindex, root, _proof)
+    assert self.checkMembership(merkleHash, txindex, root, _proof)
 
     # Delete the owner but keep the amount to prevent another exit
     self.exits[eUtxoPos].owner = ZERO_ADDRESS
