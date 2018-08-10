@@ -2,6 +2,7 @@ const utils = require("ethereumjs-util");
 const { latestTime } = require('./helpers/latestTime');
 const { increaseTimeTo, duration } = require('./helpers/increaseTime');
 const { EVMRevert } = require('./helpers/EVMRevert');
+const { expectThrow } = require('./helpers/expectThrow');
 
 
 const RootChain = artifacts.require("root_chain.vyper");
