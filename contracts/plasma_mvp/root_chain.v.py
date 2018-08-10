@@ -94,8 +94,7 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
 
 @private
 @constant
-def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes[1024]) -> bool:
-    assert len(_proof) == 512 # TODO: len(bytes[1024])
+def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes[512]) -> bool:
     proofElement: bytes32
     computedHash: bytes32 = _leaf
     index: uint256 = _index
@@ -267,7 +266,7 @@ def startFeeExit(_token: address, _amount: uint256):
 
 # @dev Starts to exit a specified utxo.
 @public
-def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _sigs: bytes[260]):
+def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sigs: bytes[260]):
     blknum: uint256 = _utxoPos / 1000000000
     txindex: uint256 = (_utxoPos % 1000000000) / 10000
     oindex: uint256 = _utxoPos - blknum * 1000000000 - txindex * 10000
@@ -290,7 +289,7 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _si
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 @public
-def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _sigs: bytes[1024], _confirmationSig: bytes[65]):
+def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sigs: bytes[1024], _confirmationSig: bytes[65]):
     # The position of the exiting utxo
     eUtxoPos: uint256 = self.getUtxoPos(_txBytes, _eUtxoIndex)
     # The output position of the challenging utxo
