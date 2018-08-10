@@ -23,9 +23,6 @@ exits: {
 
 exitsQueues: address[address]
 
-# NOTE: Constant numbers should be stored in storage or hard coded?
-ETH_ADDRESS: address
-
 operator: address
 currentChildBlock: uint256
 currentDepositBlock: uint256
@@ -159,7 +156,6 @@ def getNextExit(_token: address) -> (uint256, uint256):
 def __init__(_priorityQueueTemplate: address):
     assert _priorityQueueTemplate != ZERO_ADDRESS
     self.operator = msg.sender
-    self.ETH_ADDRESS = ZERO_ADDRESS
     self.currentChildBlock = 1000 # child block interval
     self.currentDepositBlock = 1
     self.currentFeeExit = 1    
@@ -168,8 +164,8 @@ def __init__(_priorityQueueTemplate: address):
     priorityQueue: address = create_with_code_of(_priorityQueueTemplate)    
     # Force executing as a constructor
     assert PriorityQueue(priorityQueue).setup()
-    # ETH_ADDRESS means currently support only ETH.
-    self.exitsQueues[self.ETH_ADDRESS] = priorityQueue
+    # ZERO_ADDRESS means ETH's address(currently support only ETH)
+    self.exitsQueues[ZERO_ADDRESS] = priorityQueue
 
 
 #
@@ -225,7 +221,7 @@ def deposit():
     root: bytes32 = sha3(
                         concat(
                             convert(msg.sender, "bytes32"),
-                            convert(self.ETH_ADDRESS, "bytes32"),
+                            convert(ZERO_ADDRESS, "bytes32"),
                             convert(msg.value, "bytes32")
                         )
                     )                
@@ -237,7 +233,7 @@ def deposit():
     }
     self.currentDepositBlock += 1
 
-    log.Deposit(msg.sender, depositBlock, self.ETH_ADDRESS, msg.value)
+    log.Deposit(msg.sender, depositBlock, ZERO_ADDRESS, msg.value)
 
 # @dev Starts an exit from a deposit
 # @param _depositPos UTXO position of the deposit
