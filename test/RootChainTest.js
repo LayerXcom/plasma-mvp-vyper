@@ -1,6 +1,6 @@
 const utils = require("ethereumjs-util");
 const { lastestTime } = require('./helpers/latestTime');
-const { increaseTimeTo, duration } = require('../helpers/increaseTime');
+const { increaseTimeTo, duration } = require('./helpers/increaseTime');
 
 const RootChain = artifacts.require("root_chain.vyper");
 const PriorityQueue = artifacts.require("priority_queue.vyper");
@@ -16,7 +16,7 @@ require('chai')
 
 contract("RootChain", ([owner, priorityQueueAddr]) => {
     const depositAmount = new BigNumber(web3.toWei(0.1, 'ether'));
-    const
+
     const depositAmountNum = 0.1 * 10 ** 18;
     const ZERO_ADDRESS = 0x0000000000000000000000000000000000000000;
 
@@ -35,7 +35,7 @@ contract("RootChain", ([owner, priorityQueueAddr]) => {
             const blknum = await rootChain.getDepositBlock();
             await rootChain.deposit({ value: depositAmount, from: owner });
             const depositBlockNum = await rootChain.getDepositBlock();
-            depositBlockNum.should.be.BigNumber.equal(blknum.plus(new BigNumber(1)));
+            depositBlockNum.should.be.bignumber.equal(blknum.plus(new BigNumber(1)));
         })
     });
 
@@ -51,7 +51,7 @@ contract("RootChain", ([owner, priorityQueueAddr]) => {
             await rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
             const [utxo_pos, exitable_at] = await rootChain.getNextExit(ZERO_ADDRESS);
 
-            utxo_pos.should.equal(expectedUtxoPos);
+            utxo_pos.should.be.bignumber.equal(expectedUtxoPos);
             exitable_at.should.equal(expectedExitable_at);
 
         })
