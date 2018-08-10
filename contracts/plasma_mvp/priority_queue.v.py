@@ -7,7 +7,6 @@ currentSize: uint256
 @public
 def setup() -> bool:
     self.owner = msg.sender
-    self.currentSize = 0
     return True
 
 @private
