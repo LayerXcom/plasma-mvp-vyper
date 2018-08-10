@@ -67,7 +67,7 @@ def ecrecoverSig(_txHash: bytes32, _sig: bytes[65]) -> address:
         return ZERO_ADDRESS
     r: uint256 = convert(extract32(_sig, 0, type=bytes32), "uint256")
     s: uint256 = convert(extract32(_sig, 32, type=bytes32), "uint256")
-    v: uint256 = convert(extract32(_sig, 64, type=int128), "uint256")
+    v: uint256 = convert(slice(_sig, start=64, len=1), "uint256")
     # Version of signature should be 27 or 28, but 0 and 1 are also possible versions.
     if not convert(v, "int128") in [1, 2, 27, 28]:
         return ZERO_ADDRESS
