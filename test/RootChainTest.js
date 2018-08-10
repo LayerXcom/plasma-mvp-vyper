@@ -16,7 +16,7 @@ require('chai')
     .should();
 
 
-contract("RootChain", ([owner, priorityQueueAddr]) => {
+contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     const depositAmount = new BigNumber(web3.toWei(0.1, 'ether'));
 
     const depositAmountNum = 0.1 * 10 ** 18;
@@ -43,9 +43,9 @@ contract("RootChain", ([owner, priorityQueueAddr]) => {
 
     describe("startDepositExit", () => {
         it("should be equal utxo_pos and exitable_at ", async () => {
-            await this.rootChain.deposit({ depositAmount, from: owner });
+            await this.rootChain.deposit({ value: depositAmount, from: owner });
             const blknum = await this.rootChain.getDepositBlock();
-            await this.rootChain.deposit({ depositAmount, from: owner });
+            await this.rootChain.deposit({ value: depositAmount, from: owner });
 
             const expectedUtxoPos = blknum.mul(new BigNumber(1000000000));
             const expectedExitable_at = (await latestTime()) + duration.weeks(2);
@@ -59,26 +59,26 @@ contract("RootChain", ([owner, priorityQueueAddr]) => {
 
         });
 
-        it("should fails if same deposit is exited twice", async () => {
-            await this.rootChain.deposit({ depositAmount, from: owner });
+        it("should fail if same deposit is exited twice", async () => {
+            await this.rootChain.deposit({ value: depositAmount, from: owner });
             const blknum = await this.rootChain.getDepositBlock();
-            await this.rootChain.deposit({ depositAmount, from: owner });
+            await this.rootChain.deposit({ value: depositAmount, from: owner });
             const expectedUtxoPos = blknum.mul(new BigNumber(1000000000));
 
             await this.rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
             await expectThrow(this.rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmountNum), EVMRevert);
         });
 
-        it("should fails if transaction sender is not the depositor", async () => {
+        it("should fail if transaction sender is not the depositor", async () => {
             await this.rootChain.deposit({ depositAmount, from: owner });
             const blknum = await this.rootChain.getDepositBlock();
             await this.rootChain.deposit({ depositAmount, from: owner });
             const expectedUtxoPos = blknum.mul(new BigNumber(1000000000));
 
-            await this.rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
-            await expectThrow(this.rootChain.startDepositExit)
+            await expectThrow(this.rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmountNum, { from: nonOwner }), EVMRevert);
         });
 
+        it("should fail")
     });
 
     describe("startFeeExit", () => {
