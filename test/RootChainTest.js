@@ -51,16 +51,15 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             this.expectedUtxoPos = this.blknum.mul(utxoOrder);
         })
 
-        it("should be equal utxo_pos and exitable_at ", async () => {
-            const expectedExitable_at = (await latestTime()) + duration.weeks(2);
+        it("should be equal utxoPos and exitableAt ", async () => {
+            const expectedExitableAt = (await latestTime()) + duration.weeks(2);
 
             await this.rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
-            const [utxo_pos, exitable_at] = await this.rootChain.getNextExit(ZERO_ADDRESS);
+            const [utxoPos, exitableAt] = await this.rootChain.getNextExit(ZERO_ADDRESS);
 
-            utxo_pos.should.be.bignumber.equal(this.expectedUtxoPos);
-            exitable_at.should.be.bignumber.equal(expectedExitable_at);
-            this.rootChain.getExit(utxo_pos).to.have.ordered.members([owner, ZERO_ADDRESS, depositAmount])
-
+            utxoPos.should.be.bignumber.equal(this.expectedUtxoPos);
+            exitableAt.should.be.bignumber.equal(expectedExitableAt);
+            this.rootChain.getExit(utxoPos).to.have.ordered.members([owner, ZERO_ADDRESS, depositAmount])
         });
 
         it("should fail if same deposit is exited twice", async () => {
@@ -72,7 +71,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await expectThrow(this.rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum, { from: nonOwner }), EVMRevert);
         });
 
-        it("should fail if utxo_pos is worng", async () => {
+        it("should fail if utxoPos is worng", async () => {
             await expectThrow(this.rootChain.startDepositExit(this.expectedUtxoPos * 2, ZERO_ADDRESS, depositAmountNum), EVMRevert);
         });
 
@@ -82,6 +81,14 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     });
 
     describe("startFeeExit", () => {
+        it("should be equal utxoPos and exitableAt"), async () => {
+            const blknum = await this.rootChain.getDepositBlkock();
+            await this.rootChain.deposit({ depositAmount, from: owner });
+            const expectedUtxoAt = await this.rootChain.currentFeeExit();
+            const expectedExitableAt = await (await latestTime()) + duration.weeks(2) + 1;
+
+            this.rootChain.currentFeeExit().should.be.bigNumber.equal(new BigNumber(1))
+        }
 
     });
 
