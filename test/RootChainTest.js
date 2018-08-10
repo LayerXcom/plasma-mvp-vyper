@@ -1,5 +1,5 @@
-
 const utils = require("ethereumjs-util");
+const { lastestTime } = require('./helpers/latestTime');
 
 const RootChain = artifacts.require("root_chain.vyper");
 const PriorityQueue = artifacts.require("priority_queue.vyper");
