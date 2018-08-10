@@ -22,7 +22,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     const depositAmountNum = Number(depositAmount);
     const utxoOrder = new BigNumber(1000000000);
 
-
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
     beforeEach(async () => {
@@ -93,6 +92,21 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             (await this.rootChain.getCurrentFeeExit()).should.be.bignumber.equal(new BigNumber(2));
 
             const [utxoPos, exitableAt] = await this.rootChain.getNextExit(ZERO_ADDRESS);
+            const fee_priority = exitableAt << 128 | utxoPos;
+
+            utxoPos.should.be.bignumber.equal(expectedUtxoAt);
+            exitableAt.should.be.bignumber.equal(expectedExitableAt);
+
+            expectedUtxoPos = blknum.mul(utxoOrder).plus(new BigNumber(1));
+            await this.rp
+        });
+
+        it("feePriority should be larger than depositPriority", async () => {
+
+        });
+
+        it("should fail if transaction sender isn't the authority", async () => {
+
         });
 
     });
