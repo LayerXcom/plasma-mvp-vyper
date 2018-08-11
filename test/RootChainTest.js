@@ -64,8 +64,10 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             exitableAt.should.be.bignumber.equal(expectedExitableAt);
             utxoPos.should.be.bignumber.equal(this.expectedUtxoPos);
 
-            // (await rootChain.getNextExit(ZERO_ADDRESS)).to.have.ordered.members([this.expectedUtxoPos, expectedExitableAt]);
-            (await rootChain.getExit(utxoPos)).should.to.have.ordered.members([owner, ZERO_ADDRESS, depositAmount]);
+            const [expectedOwner, token, amount] = await rootChain.getExit(utxoPos);
+            expectedOwner.should.equal = owner;
+            token.should.equal = ZERO_ADDRESS;
+            amount.should.equal = depositAmount;
         });
 
         it("should fail if same deposit is exited twice", async () => {
@@ -110,7 +112,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
             const depositPriotiy = exitableAt << 128 | utxoPos;
-            feePriority.to.be.above(depositPriotiy);
+            feePriority.should.to.be.above(depositPriotiy);
         });
 
         it("should fail if transaction sender isn't the authority", async () => {

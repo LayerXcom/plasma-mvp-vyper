@@ -57,7 +57,7 @@ def insert(_k: uint256) -> bool:
     # NOTE: heapList[0] is not used
     self.currentSize += 1
     self.heapList[self.currentSize] = _k
-    # self.percUp(self.currentSize)
+    self.percUp(self.currentSize)
     return True
 
 
