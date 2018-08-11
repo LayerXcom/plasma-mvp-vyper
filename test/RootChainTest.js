@@ -58,11 +58,13 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const expectedExitableAt = (await latestTime()) + duration.weeks(2);
 
             await rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
-            const [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
+            // const [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
 
-            utxoPos.should.be.bignumber.equal(this.expectedUtxoPos);
-            exitableAt.should.be.bignumber.equal(expectedExitableAt);
-            (await rootChain.getExit(utxoPos)).to.have.ordered.members([owner, ZERO_ADDRESS, depositAmount])
+            // utxoPos.should.be.bignumber.equal(this.expectedUtxoPos);
+            // exitableAt.should.be.bignumber.equal(expectedExitableAt);
+
+            (await rootChain.getNextExit(ZERO_ADDRESS)).to.have.ordered.members([this.expectedUtxoPos, expectedExitableAt]);
+            (await rootChain.getExit(utxoPos)).to.have.ordered.members([owner, ZERO_ADDRESS, depositAmount]);
         });
 
         it("should fail if same deposit is exited twice", async () => {
@@ -84,7 +86,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     });
 
     describe("startFeeExit", () => {
-        it("should be equal utxoPos and exitableAt", async () => {
+        it("feePriority should be larger than depositPriority", async () => {
             let utxoPos, exitableAt;
 
             const blknum = await rootChain.getDepositBlock();
@@ -108,18 +110,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
             const depositPriotiy = exitableAt << 128 | utxoPos;
             feePriority.to.be.above(depositPriotiy);
-
-            await expectThrow(rootChain.startFeeExit(ZERO_ADDRESS, 1, { from: nonOwner }), EVMRevert);
-        });
-
-        it("feePriority should be larger than depositPriority", async () => {
-
         });
 
         it("should fail if transaction sender isn't the authority", async () => {
-
+            await rootChain.deposit({ value: depositAmount, from: owner });
+            await expectThrow(rootChain.startFeeExit(ZERO_ADDRESS, 1, { from: nonOwner }), EVMRevert);
         });
-
     });
 
     describe("startExit", () => {
