@@ -47,9 +47,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
     describe("startDepositExit", () => {
         beforeEach(async () => {
-            await this.rootChain.deposit({ depositAmount, from: owner });
+            await this.rootChain.deposit({ value: depositAmount, from: owner });
             this.blknum = await this.rootChain.getDepositBlock();
-            await this.rootChain.deposit({ depositAmount, from: owner });
+            await this.rootChain.deposit({ value: depositAmount, from: owner });
             this.expectedUtxoPos = this.blknum.mul(utxoOrder);
         })
 
@@ -84,7 +84,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
     describe("startFeeExit", () => {
         it("should be equal utxoPos and exitableAt", async () => {
-            let [utxoPos, exitableAt];
+            let utxoPos, exitableAt;
 
             const blknum = await this.rootChain.getDepositBlock();
             await this.rootChain.deposit({ value: depositAmount, from: owner });
