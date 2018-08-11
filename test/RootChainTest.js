@@ -82,23 +82,31 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
     describe("startFeeExit", () => {
         it("should be equal utxoPos and exitableAt", async () => {
+            let [utxoPos, exitableAt];
+
             const blknum = await this.rootChain.getDepositBlock();
-            await this.rootChain.deposit({ depositAmount, from: owner });
+            await this.rootChain.deposit({ value: depositAmount, from: owner });
             const expectedUtxoAt = await this.rootChain.getCurrentFeeExit();
             const expectedExitableAt = (await latestTime()) + duration.weeks(2) + 1;
 
             (await this.rootChain.getCurrentFeeExit()).should.be.bignumber.equal(new BigNumber(1));
-            await this.rootChain.startFeeExit(ZERO_ADDRESS, depositAmountNum);
+            await this.rootChain.startFeeExit(ZERO_ADDRESS, 1);
             (await this.rootChain.getCurrentFeeExit()).should.be.bignumber.equal(new BigNumber(2));
 
-            const [utxoPos, exitableAt] = await this.rootChain.getNextExit(ZERO_ADDRESS);
-            const fee_priority = exitableAt << 128 | utxoPos;
+            [utxoPos, exitableAt] = await this.rootChain.getNextExit(ZERO_ADDRESS);
+            const feePriority = exitableAt << 128 | utxoPos;
 
             utxoPos.should.be.bignumber.equal(expectedUtxoAt);
             exitableAt.should.be.bignumber.equal(expectedExitableAt);
 
-            expectedUtxoPos = blknum.mul(utxoOrder).plus(new BigNumber(1));
-            await this.rp
+            const expectedUtxoPos = blknum.mul(utxoOrder).plus(new BigNumber(1));
+            await this.rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmount);
+
+            [utxoPos, exitableAt] = await this.rootChain.getNextExit(ZERO_ADDRESS);
+            const depositPriotiy = exitableAt << 128 | utxoPos;
+            feePriority.to.be.above(depositPriotiy);
+
+            await expectThrow(this.rootCHain.startFeeExit(ZERO_ADDRESS, 1, { from: nonOwner }), EVMRevert);
         });
 
         it("feePriority should be larger than depositPriority", async () => {
