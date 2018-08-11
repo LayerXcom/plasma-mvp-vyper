@@ -28,7 +28,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
     beforeEach(async () => {
-        rootChain = await RootChain.new(priorityQueueAddr, { from: owner });
+        priorityQueue = await PriorityQueue.new();
+        rootChain = await RootChain.new(priorityQueue.address, { from: owner });
     });
 
     describe("submitBlock", () => {
@@ -58,13 +59,13 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const expectedExitableAt = (await latestTime()) + duration.weeks(2);
 
             await rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
-            // const [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
+            const [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
 
-            // utxoPos.should.be.bignumber.equal(this.expectedUtxoPos);
-            // exitableAt.should.be.bignumber.equal(expectedExitableAt);
+            exitableAt.should.be.bignumber.equal(expectedExitableAt);
+            utxoPos.should.be.bignumber.equal(this.expectedUtxoPos);
 
-            (await rootChain.getNextExit(ZERO_ADDRESS)).to.have.ordered.members([this.expectedUtxoPos, expectedExitableAt]);
-            (await rootChain.getExit(utxoPos)).to.have.ordered.members([owner, ZERO_ADDRESS, depositAmount]);
+            // (await rootChain.getNextExit(ZERO_ADDRESS)).to.have.ordered.members([this.expectedUtxoPos, expectedExitableAt]);
+            (await rootChain.getExit(utxoPos)).should.to.have.ordered.members([owner, ZERO_ADDRESS, depositAmount]);
         });
 
         it("should fail if same deposit is exited twice", async () => {
