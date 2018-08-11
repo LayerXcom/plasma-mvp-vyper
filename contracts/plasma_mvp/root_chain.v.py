@@ -265,6 +265,10 @@ def startFeeExit(_token: address, _amount: uint256):
     
 
 # @dev Starts to exit a specified utxo.
+# @param _utxoPos The position of the exiting utxo in the format of blknum * 1000000000 + index * 10000 + oindex.
+# @param _txBytes The transaction being exited in RLP bytes format.
+# @param _proof Proof of the exiting transactions inclusion for the block specified by utxoPos.
+# @param _sigs Both transaction signatures and confirmations signatures used to verify that the exiting transaction has been confirmed.
 @public
 def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sigs: bytes[260]):
     blknum: uint256 = _utxoPos / 1000000000
@@ -288,8 +292,14 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sig
     self.addExitToQueue(_utxoPos, exitor, token, amount, self.childChain[blknum].blockTimestamp)
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
+# @param _cUtxoPos The position of the challenging utxo.
+# @param _eUtxoIndex The output position of the exiting utxo.
+# @param _txBytes The challenging transaction in bytes RLP form.
+# @param _proof Proof of inclusion for the transaction used to challenge.
+# @param _sigs Signatures for the transaction used to challenge(It doesn't include confirmations signatures).
+# @param _confirmationSig The confirmation signature for the transaction used to challenge.
 @public
-def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sigs: bytes[1024], _confirmationSig: bytes[65]):
+def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sigs: bytes[130], _confirmationSig: bytes[65]):
     # The position of the exiting utxo
     eUtxoPos: uint256 = self.getUtxoPos(_txBytes, _eUtxoIndex)
     # The output position of the challenging utxo
