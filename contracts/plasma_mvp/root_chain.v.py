@@ -157,7 +157,6 @@ def getNextExit(_token: address) -> (uint256, uint256):
     return utxoPos, exitable_at
 
 
-
 # @dev Constructor
 @public
 def __init__(_priorityQueueTemplate: address):
