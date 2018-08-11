@@ -21,6 +21,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     const depositAmount = new BigNumber(web3.toWei(0.1, 'ether'));
     const depositAmountNum = Number(depositAmount);
     const utxoOrder = new BigNumber(1000000000);
+    const num1 = new BigNumber(1);
+    const num2 = new BigNumber(2);
 
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -39,7 +41,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const blknum = await this.rootChain.getDepositBlock();
             await this.rootChain.deposit({ value: depositAmount, from: owner });
             const depositBlockNum = await this.rootChain.getDepositBlock();
-            depositBlockNum.should.be.bignumber.equal(blknum.plus(new BigNumber(1)));
+            depositBlockNum.should.be.bignumber.equal(blknum.plus(num1));
         })
     });
 
@@ -89,9 +91,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const expectedUtxoAt = await this.rootChain.getCurrentFeeExit();
             const expectedExitableAt = (await latestTime()) + duration.weeks(2) + 1;
 
-            (await this.rootChain.getCurrentFeeExit()).should.be.bignumber.equal(new BigNumber(1));
+            (await this.rootChain.getCurrentFeeExit()).should.be.bignumber.equal(num1);
             await this.rootChain.startFeeExit(ZERO_ADDRESS, 1);
-            (await this.rootChain.getCurrentFeeExit()).should.be.bignumber.equal(new BigNumber(2));
+            (await this.rootChain.getCurrentFeeExit()).should.be.bignumber.equal(num2);
 
             [utxoPos, exitableAt] = await this.rootChain.getNextExit(ZERO_ADDRESS);
             const feePriority = exitableAt << 128 | utxoPos;
@@ -99,7 +101,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             utxoPos.should.be.bignumber.equal(expectedUtxoAt);
             exitableAt.should.be.bignumber.equal(expectedExitableAt);
 
-            const expectedUtxoPos = blknum.mul(utxoOrder).plus(new BigNumber(1));
+            const expectedUtxoPos = blknum.mul(utxoOrder).plus(num1);
             await this.rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmount);
 
             [utxoPos, exitableAt] = await this.rootChain.getNextExit(ZERO_ADDRESS);
