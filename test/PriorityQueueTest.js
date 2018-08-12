@@ -12,8 +12,8 @@ let {
 
 contract('PriorityQueue', async (accounts) => {
     let instance;
-    before(async () => {
-        instance = await PriorityQueue.deployed();
+    beforeEach(async () => {
+        instance = await PriorityQueue.new();
     });
 
     it("Add then remove", async () => {
