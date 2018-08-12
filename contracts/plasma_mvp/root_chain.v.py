@@ -76,6 +76,7 @@ def ecrecoverSig(_txHash: bytes32, _sig: bytes[65]) -> address:
 @private
 @constant
 def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes[260]) -> bool:
+    assert len(_sigs) % 65 == 0
     sig1: bytes[65] = slice(_sigs, start=0, len=65)
     sig2: bytes[65] = slice(_sigs, start=65, len=65)
     confSig1: bytes[65] = slice(_sigs, start=130, len=65)
