@@ -1,6 +1,6 @@
 let assert = require('chai').assert;
 
-let PriorityQueue = artifacts.require("PriorityQueue");
+let PriorityQueue = artifacts.require("priority_queue.vyper");
 
 let {
     catchError,
