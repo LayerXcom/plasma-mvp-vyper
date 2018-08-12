@@ -151,7 +151,7 @@ def getCurrentFeeExit() -> uint256:
 def getNextExit(_token: address) -> (uint256, uint256):
     priority: uint256 = PriorityQueue(self.exitsQueues[_token]).getMin()
     # NOTE: Is this double convert needed?
-    utxoPos: uint256 = convert(convert(priority, "int128"), "uint256")    
+    utxoPos: uint256 = convert(convert(priority, "int128"), "uint256") 
     exitable_at: uint256 = shift(priority, -128)
     return utxoPos, exitable_at
 
