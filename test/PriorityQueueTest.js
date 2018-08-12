@@ -1,5 +1,6 @@
 let assert = require('chai').assert;
 
+let RootChain = artifacts.require("root_chain.vyper");
 let PriorityQueue = artifacts.require("priority_queue.vyper");
 
 let {
@@ -14,6 +15,8 @@ contract('PriorityQueue', async (accounts) => {
     let instance;
     beforeEach(async () => {
         instance = await PriorityQueue.new();
+        await instance.setup();
+        // rootChain = await RootChain.new(instance.address);
     });
 
     it("Add then remove", async () => {
@@ -47,7 +50,7 @@ contract('PriorityQueue', async (accounts) => {
         }
 
         min = parseInt(await instance.getMin());
-        currSize = parseInt(await instance.currentSize.call());
+        currSize = parseInt(await instance.getCurrentSize());
         assert.equal(min, 4, "delMin deleted priorities out of order");
         assert.equal(currSize, 2, "currSize did not decrement");
         // Clear the queue
