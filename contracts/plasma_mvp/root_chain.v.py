@@ -60,6 +60,8 @@ def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
 @private
 @constant
 def ecrecoverSig(_txHash: bytes32, _sig: bytes[65]) -> address:
+    if len(_sig) != 65:
+        return ZERO_ADDRESS
     # ref. https://gist.github.com/axic/5b33912c6f61ae6fd96d6c4a47afde6d
     # The signature format is a compact form of:
     # {bytes32 r}{bytes32 s}{uint8 v}
