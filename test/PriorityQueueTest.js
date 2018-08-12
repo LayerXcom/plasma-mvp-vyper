@@ -10,8 +10,6 @@ let {
     zeroHashes
 } = require('./helpers/priorityQueueUtilities.js');
 
-let rootchainHelpers = require('./rootchain_helpers.js');
-
 contract('PriorityQueue', async (accounts) => {
     let instance;
     before(async () => {
