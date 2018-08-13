@@ -3,7 +3,7 @@ const { Buffer } = require('safe-buffer');
 
 const sha3 = utils.sha3
 
-export default class FixedMerkleTree {
+class FixedMerkleTree {
     constructor(depth, leaves = []) {
         const l = leaves.concat(
             Array.from(Array(2 ** depth - leaves.length), () => utils.zeros(32))
@@ -126,3 +126,5 @@ export default class FixedMerkleTree {
         return Buffer.compare(hash, root) === 0
     }
 }
+
+module.exports = FixedMerkleTree;
