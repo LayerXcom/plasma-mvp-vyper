@@ -144,7 +144,7 @@ def getExit(_utxoPos: uint256) -> (address, address, uint256):
 @constant
 def getNextExit(_token: address) -> (uint256, uint256):
     priority: uint256 = PriorityQueue(self.exitsQueues[_token]).getMin()
-    # Cut the first 128 digits represents exitable_at.
+    # Cut the first 128 digits which represents exitable_at.
     utxoPos: uint256 = shift(shift(priority, 128), -128)
     exitable_at: uint256 = shift(priority, -128)
     return utxoPos, exitable_at
