@@ -93,7 +93,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             depositBlkNum.should.be.equal(num1);
 
             await rootChain.deposit({ value: depositAmount, from: owner });
-            const merkle = FixedMerkleTree(16, [depositTxHash]);
+            const merkle = new FixedMerkleTree(16, [depositTxHash]);
+            const proof = utils.bufferToHex(Buffer.concat(TreeWalker.getplasmaProof(depositTxHash)));
         })
     });
 
