@@ -3,7 +3,7 @@ const { latestTime } = require('./helpers/latestTime');
 const { increaseTimeTo, duration } = require('./helpers/increaseTime');
 const { EVMRevert } = require('./helpers/EVMRevert');
 const { expectThrow } = require('./helpers/expectThrow');
-
+const FixedMerkleTree = require('./helpers/fixedMerkleTree');
 
 const RootChain = artifacts.require("root_chain.vyper");
 const PriorityQueue = artifacts.require("priority_queue.vyper");
@@ -89,11 +89,11 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         it("", async () => {
             const txBytes1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + depositAmount);
-            const depBlknum = await rootChain.getDepositBlock();
-            depBlknum.should.be.equal(num1);
+            const depositBlkNum = await rootChain.getDepositBlock();
+            depositBlkNum.should.be.equal(num1);
 
             await rootChain.deposit({ value: depositAmount, from: owner });
-            const merkle = 
+            const merkle = FixedMerkleTree(16, [depositTxHash]);
         })
     });
 
