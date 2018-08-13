@@ -100,7 +100,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.deposit({ value: depositAmount, from: owner });
             const merkle = new FixedMerkleTree(16, [depositTxHash]);
             const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(depositTxHash)));
-            const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlkNum)[0]), )
+            const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlkNum)[0]), owenerKey);
         })
     });
 
