@@ -10,7 +10,8 @@
     "console": "truffle console",
     "migrate": "truffle migrate",
     "networks": "truffle networks",
-    "test": "truffle test"
+    "test": "truffle test",
+    "develop": "truffle develop"
   },
   "repository": "https://github.com/LayerXcom/plasma-mvp-vyper.git",
   "author": "Osuke Sudo <osuke.sudo@layerx.co.jp>, Ryuya Nakamura <ryuya.nakamura@layerx.co.jp>",
