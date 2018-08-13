@@ -5,6 +5,7 @@ const { EVMRevert } = require('./helpers/EVMRevert');
 const { expectThrow } = require('./helpers/expectThrow');
 const FixedMerkleTree = require('./helpers/fixedMerkleTree');
 const Transaction = require('./helpers/transaction');
+const { keys } = require('./helpers/keys');
 
 const RootChain = artifacts.require("root_chain.vyper");
 const PriorityQueue = artifacts.require("priority_queue.vyper");

@@ -315,30 +315,6 @@ class Transaction {
             utils.bufferToInt(oIndex)
         )
     }
-
-    /**
-     * Get key for UTXO (as Buffer) by input index
-     */
-    keyForUTXOByInputIndex(index) {
-        const sender = this.senderByInputIndex(index)
-        if (sender) {
-            const [blkNumber, txIndex, oIndex] = this.positionsByInputIndex(index)
-            return Transaction.keyForUTXO(sender, blkNumber, txIndex, oIndex)
-        }
-
-        return null
-    }
-
-    // static method for utxo key
-    static keyForUTXO(sender, blkNumber, txIndex, oIndex) {
-        return Buffer.concat([
-            config.prefixes.utxo,
-            utils.toBuffer(sender),
-            new BN(blkNumber).toArrayLike(Buffer, 'be', 32), // block number
-            new BN(txIndex).toArrayLike(Buffer, 'be', 32), // tx index
-            new BN(oIndex).toArrayLike(Buffer, 'be', 32) // output index
-        ])
-    }
 }
 
 module.exports = Transaction;
