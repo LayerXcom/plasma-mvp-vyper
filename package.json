@@ -6,9 +6,9 @@
   "scripts": {
     "build:sol": "truffle compile",
     "build:vyper": "truper",
-    "build": "npm run build:sol && npm run build:vyper && for F in build/contracts/*; do mv $F ${F/.vyper/};done",
+    "rename-vyper-artifacts": "for F in build/contracts/*; do mv $F ${F/.vyper/};done",
+    "build": "npm run build:sol && npm run build:vyper && rename-vyper-artifacts",
     "console": "truffle console",
-    "lint": "eslint './**/*.js?(x)'",
     "migrate": "truffle migrate",
     "networks": "truffle networks",
     "test": "truffle test"
