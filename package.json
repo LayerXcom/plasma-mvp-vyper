@@ -7,7 +7,7 @@
     "build:sol": "truffle compile",
     "build:vyper": "truper",
     "rename-vyper-artifacts": "for F in build/contracts/*; do mv $F ${F/.vyper/};done",
-    "build": "npm run build:sol && npm run build:vyper && rename-vyper-artifacts",
+    "build": "npm run build:sol && npm run build:vyper && npm run rename-vyper-artifacts",
     "console": "truffle console",
     "migrate": "truffle migrate",
     "networks": "truffle networks",
