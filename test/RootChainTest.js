@@ -22,7 +22,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     const utxoOrder = new BigNumber(1000000000);
 
     const depositAmountNum = 0.1 * 10 ** 18;
-    const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+    const ZERO_ADDRESS = utils.bufferToHex(utils.zeros(20));
 
     beforeEach(async () => {
         this.rootChain = await RootChain.new(priorityQueueAddr, { from: owner });
@@ -95,6 +95,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.deposit({ value: depositAmount, from: owner });
             const merkle = new FixedMerkleTree(16, [depositTxHash]);
             const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(depositTxHash)));
+            const confirmationSig1 = 
         })
     });
 
