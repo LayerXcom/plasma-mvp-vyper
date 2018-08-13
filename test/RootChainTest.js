@@ -86,7 +86,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     });
 
     describe("startExit", () => {
-
+        it("", async () => {
+            const tx1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
+        })
     });
 
     describe("challengeExit", () => {
