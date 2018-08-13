@@ -1,5 +1,5 @@
-import utils from 'ethereumjs-util'
-import { Buffer } from 'safe-buffer'
+const utils = require('ethereumjs-util');
+const { Buffer } = require('safe-buffer');
 
 const sha3 = utils.sha3
 
