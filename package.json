@@ -1,6 +1,6 @@
 {
   "name": "plasma-mvp-vyper",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Vyper implementation of Plasma MVP",
   "scripts": {
     "build:sol": "truffle compile",
