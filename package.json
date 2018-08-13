@@ -3,6 +3,16 @@
   "version": "1.0.0",
   "description": "Vyper implementation of Plasma MVP",
   "main": "index.js",
+  "scripts": {
+    "build:sol": "truffle compile",
+    "build:vyper": "truper",
+    "build": "npm run build:sol && npm run build:vyper && for F in build/contracts/*; do mv $F ${F/.vyper/};done",
+    "console": "truffle console",
+    "lint": "eslint './**/*.js?(x)'",
+    "migrate": "truffle migrate",
+    "networks": "truffle networks",
+    "test": "truffle test"
+  },
   "repository": "https://github.com/LayerXcom/plasma-mvp-vyper.git",
   "author": "Osuke Sudo <osuke.sudo@layerx.co.jp>, Ryuya Nakamura <ryuya.nakamura@layerx.co.jp>",
   "license": "MIT",
