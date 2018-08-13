@@ -12,6 +12,7 @@
     "chai-bignumber": "^2.0.2",
     "ethereumjs-util": "^5.2.0",
     "pify": "^4.0.0",
+    "safe-buffer": "^5.1.2",
     "truffle": "^4.1.13",
     "truffle-hdwallet-provider": "^0.0.6",
     "truper": "^0.0.2",

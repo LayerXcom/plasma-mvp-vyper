@@ -87,7 +87,13 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
     describe("startExit", () => {
         it("", async () => {
-            const tx1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
+            const txBytes1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
+            const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + depositAmount);
+            const depBlknum = await rootChain.getDepositBlock();
+            depBlknum.should.be.equal(num1);
+
+            await rootChain.deposit({ value: depositAmount, from: owner });
+            const merkle = 
         })
     });
 
