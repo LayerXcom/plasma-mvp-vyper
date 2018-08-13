@@ -101,6 +101,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const merkle = new FixedMerkleTree(16, [depositTxHash]);
             const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(depositTxHash)));
             const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlkNum)[0]), owenerKey);
+            const priority1 = depositBlkNum * 1000000000 + 10000 * 0 + 1;
+            const sigs = tx1.sig1 + tx1.sig2 + confirmationSig1;
+
         })
     });
 
