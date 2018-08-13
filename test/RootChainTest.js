@@ -5,8 +5,8 @@ const { EVMRevert } = require('./helpers/EVMRevert');
 const { expectThrow } = require('./helpers/expectThrow');
 
 
-const RootChain = artifacts.require("root_chain.vyper");
-const PriorityQueue = artifacts.require("priority_queue.vyper");
+const RootChain = artifacts.require("root_chain");
+const PriorityQueue = artifacts.require("priority_queue");
 
 const rlp = utils.rlp;
 const BigNumber = web3.BigNumber;
