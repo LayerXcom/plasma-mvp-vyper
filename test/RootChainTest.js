@@ -22,8 +22,10 @@ require('chai')
 contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     const depositAmount = new BigNumber(web3.toWei(0.1, 'ether'));
     const utxoOrder = new BigNumber(1000000000);
-
     const depositAmountNum = 0.1 * 10 ** 18;
+
+    const owenerKey = keys[0];
+    const nonOwnerKey = keys[1];
     const ZERO_ADDRESS = utils.bufferToHex(utils.zeros(20));
 
     beforeEach(async () => {
