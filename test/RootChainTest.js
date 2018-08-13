@@ -4,6 +4,7 @@ const { increaseTimeTo, duration } = require('./helpers/increaseTime');
 const { EVMRevert } = require('./helpers/EVMRevert');
 const { expectThrow } = require('./helpers/expectThrow');
 const FixedMerkleTree = require('./helpers/fixedMerkleTree');
+const Transaction = require('./helpers/transaction');
 
 const RootChain = artifacts.require("root_chain.vyper");
 const PriorityQueue = artifacts.require("priority_queue.vyper");
@@ -96,7 +97,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.deposit({ value: depositAmount, from: owner });
             const merkle = new FixedMerkleTree(16, [depositTxHash]);
             const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(depositTxHash)));
-            const confirmationSig1 = confirmTx()
+            const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlkNum)[0]), )
         })
     });
 

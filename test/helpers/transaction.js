@@ -64,7 +64,7 @@ const getFields = () => [
     }
 ]
 
-export default class Transaction {
+class Transaction {
     constructor(data) {
         utils.defineProperties(this, getFields(), data)
 
@@ -340,3 +340,5 @@ export default class Transaction {
         ])
     }
 }
+
+module.exports = Transaction;
