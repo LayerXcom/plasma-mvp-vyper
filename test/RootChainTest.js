@@ -271,10 +271,10 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 new Buffer([]) // amount2           
             ]);
 
+            const txBytes3 = utils.bufferToHex(tx3.serializeTx());
             tx3.sign1(owenerKey);
             tx3.sign2(owenerKey);
 
-            const txBytes3 = rlp.encode(tx3); // TODO
             merkleHash = tx3.merkleHash();
             merkle = new FixedMerkleTree(16, [merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(merkleHash)));
