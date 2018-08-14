@@ -11,7 +11,7 @@ const RootChain = artifacts.require("root_chain");
 const PriorityQueue = artifacts.require("priority_queue");
 
 const rlp = utils.rlp;
-const BigNumber = web3.BigNumber;
+const BigNumber = utils.BN;
 
 require('chai')
     .use(require('chai-as-promised'))
