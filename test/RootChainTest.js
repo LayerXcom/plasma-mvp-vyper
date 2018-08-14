@@ -123,7 +123,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         it("can exit single input", async () => {
             const tx2 = new Transaction(depositBlkNum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
             tx2.sign1(key);
-            txBytes2 = rlp.encode()
+            txBytes2 = rlp.encode(tx2); // TODO
             const merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(tx2.merkleHash)));
             const childBlknum = await rootChain.currentChildBlock();
