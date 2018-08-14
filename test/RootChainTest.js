@@ -136,7 +136,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             // const txBytes1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + depositAmount); // TODO
             const depositBlknum = await rootChain.getDepositBlock();
-            depositBlknum.should.be.equal(num1);
+            depositBlknum.should.be.bignumber.equal(num1);
 
             await rootChain.deposit({ value: depositAmount, from: owner });
             const merkle = new FixedMerkleTree(16, [depositTxHash]);
@@ -160,8 +160,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
         it("can exit single input", async () => {
             await rootChain.deposit({ value: depositAmount, from: owner });
+            const depositBlknum = await rootChain.getDepositBlock();
             const tx2 = new Transaction(depositBlknum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
-            tx2.sign1(key);
+            tx2.sign1(owenerKey);
             txBytes2 = rlp.encode(tx2); // TODO
             const merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(tx2.merkleHash)));
@@ -193,8 +194,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             await rootChain.deposit({ value: depositAmount, from: owner });
             const tx3 = new Transaction(childBlknum, 0, 0, depositBlknum2, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
-            tx3.sign1(key);
-            tx3.sign2(key);
+            tx3.sign1(owenerKey);
+            tx3.sign2(owenerKey);
 
             const txBytes3 = rlp.encode(tx3); // TODO
             const merkle = new FixedMerkleTree(16, [tx3.merkleHash]);
