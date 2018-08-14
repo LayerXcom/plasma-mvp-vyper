@@ -121,6 +121,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         });
 
         it("can exit single input", async () => {
+            await rootChain.deposit({ value: depositAmount, from: owner });
             const tx2 = new Transaction(depositBlkNum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
             tx2.sign1(key);
             txBytes2 = rlp.encode(tx2); // TODO
