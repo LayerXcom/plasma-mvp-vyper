@@ -90,12 +90,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     });
 
     describe("startExit", () => {
+        let expectedOwner, tokenAddr, expectedAmount
         beforeEach(async () => {
 
         });
 
         it("cannot exit twice off of the same utxo", async () => {
-            let expectedOwner, tokenAddr, expectedAmount
             const tx1 = new Transaction(0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
             // const txBytes1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + depositAmount); // TODO
