@@ -167,6 +167,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const txBytes3 = rlp.encode(tx3); // TODO
             const merkle = new FixedMerkleTree(16, [tx3.merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(tx3.merkleHash)));
+            const childBlknum2 = await rootChain.currentChildBlock();
         });
     });
 
