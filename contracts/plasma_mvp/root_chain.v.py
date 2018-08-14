@@ -145,6 +145,12 @@ def getExit(_utxoPos: uint256) -> (address, address, uint256):
 def getCurrentFeeExit() -> uint256:
     return self.currentFeeExit
 
+# @dev Returns currentChildBlock
+@public
+@constant
+def getCurrentChildBlock() -> uint256:
+    return self.currentChildBlock
+
 # @dev Determines the next exit to be processed.
 @public
 @constant
