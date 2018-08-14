@@ -120,8 +120,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             expectedAmount.should.be.bignumber.equal(depositAmount);
         });
 
-        it("", async () => {
-            const tx2 = new Transaction(depositBlkNum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0)
+        it("can exit single input", async () => {
+            const tx2 = new Transaction(depositBlkNum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
+            tx2.sign1(key);
+            txBytes2 = rlp.encode()
+            const merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
+
         });
     });
 
