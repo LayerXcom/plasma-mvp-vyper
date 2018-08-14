@@ -132,7 +132,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.submitBlock(merkle.getRoot());
             const confirmationSig1 = confirmTx(tx2, (await rootChain.getChildChain(childBlknum)[0]), owenerKey);
             const priority2 = childBlknum * 1000000000 + 10000 * 0 + 0;
-
+            const sigs = tx2.sig1 + tx2.sig2 + confirmationSig1;
         });
     });
 
