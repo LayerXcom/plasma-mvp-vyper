@@ -158,8 +158,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             depositBlknum.should.be.bignumber.equal(num1);
 
             await rootChain.deposit({ value: depositAmount, from: owner });
-            const merkle = new FixedMerkleTree(16, [merkleHash]);
-            const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(merkleHash)));
+            const tree = new FixedMerkleTree(16, [merkleHash]);
+            const proof = utils.bufferToHex(Buffer.concat(tree.getplasmaProof(merkleHash)));
             const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlknum)[0]), owenerKey);
 
             const priority1 = depositBlknum * 1000000000 + 10000 * 0 + 1;
@@ -182,7 +182,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.deposit({ value: depositAmount, from: owner });
             const depositBlknum = await rootChain.getDepositBlock();
             const tx2 = new Transaction([
-                depositBlknum.toArrayLike(Buffer, 'be', 32), // blkbum1
+                (new BN(Number(depositBlknum))).toArrayLike(Buffer, 'be', 32), // blkbum1
                 new Buffer([]), // txindex1
                 new Buffer([]), // oindex1
 
@@ -202,13 +202,14 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const txBytes2 = utils.bufferToHex(tx2.serializeTx());
             tx2.sign1(owenerKey);
 
-            const merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
-            const merkleHash = merkle.merkleHash();
-            const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(merkleHash)));
+            const merkleHash = tx2.merkleHash();
+            const tree = new FixedMerkleTree(16, [merkleHash]);
+            const proof = utils.bufferToHex(Buffer.concat(tree.getplasmaProof(merkleHash)));
+
             const childBlknum = await rootChain.getCurrentChildBlock();
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
 
-            await rootChain.submitBlock(merkle.getRoot());
+            await rootChain.submitBlock(tree.getRoot());
             const confirmationSig1 = confirmTx(tx2, (await rootChain.getChildChain(childBlknum)[0]), owenerKey);
             const priority2 = childBlknum * 1000000000 + 10000 * 0 + 0;
             const sigs = tx2.sig1 + tx2.sig2 + confirmationSig1;
@@ -243,7 +244,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.zeros(20), // newowner2
                 new Buffer([]) // amount2           
             ]);
-
+            let merkleHash = merkle.merkleHash();
             let merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
             await rootChain.submitBlock(merkle.getRoot());
