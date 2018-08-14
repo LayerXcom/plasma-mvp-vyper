@@ -173,13 +173,20 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             await rootChain.deposit({ value: depositAmount, from: owner });
 
-            let merkleHash = tx1.merkleHash();
-            let tree = new FixedMerkleTree(16, [merkleHash]);
-            let proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
-            const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlknum)[0]), owenerKey);
+            const merkleHash = tx1.merkleHash();
+            const tree = new FixedMerkleTree(16, [merkleHash]);
+            const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
+            // const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlknum)[0]), owenerKey);
+
+            const sigs = utils.bufferToHex(
+                Buffer.concat([
+                    tx1.sig1,
+                    tx1.sig2,
+                    tx1.confirmSig((await rootChain.getChildChain(depositBlknum)[0]), owenerKey)
+                ])
+            );
 
             const priority1 = depositBlknum * 1000000000 + 10000 * 0 + 1;
-            const sigs = tx1.sig1 + tx1.sig2 + confirmationSig1;
             const utxoId = depositBlknum * 1000000000 + 10000 * 0 + 1;
 
             await rootChain.startDepositExit(utxoId, ZERO_ADDRESS, tx1.amount1);
