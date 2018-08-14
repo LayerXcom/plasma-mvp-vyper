@@ -139,6 +139,12 @@ def getDepositBlock() -> uint256:
 def getExit(_utxoPos: uint256) -> (address, address, uint256):
     return self.exits[_utxoPos].owner, self.exits[_utxoPos].token, self.exits[_utxoPos].amount
 
+# @dev Returns currentFeeExit
+@public
+@constant
+def getCurrentFeeExit() -> uint256:
+    return self.currentFeeExit
+
 # @dev Determines the next exit to be processed.
 @public
 @constant

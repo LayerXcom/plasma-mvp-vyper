@@ -18,14 +18,18 @@ require('chai')
 
 
 contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
+    let rootChain;
     const depositAmount = new BigNumber(web3.toWei(0.1, 'ether'));
+    const depositAmountNum = Number(depositAmount);
     const utxoOrder = new BigNumber(1000000000);
+    const num1 = new BigNumber(1);
+    const num2 = new BigNumber(2);
 
-    const depositAmountNum = 0.1 * 10 ** 18;
     const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
     beforeEach(async () => {
-        this.rootChain = await RootChain.new(priorityQueueAddr, { from: owner });
+        priorityQueue = await PriorityQueue.new();
+        rootChain = await RootChain.new(priorityQueue.address, { from: owner });
     });
 
     describe("submitBlock", () => {
@@ -36,53 +40,85 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
     describe("deposit", () => {
         it("should accespt deposit", async () => {
-            const blknum = await this.rootChain.getDepositBlock();
-            await this.rootChain.deposit({ value: depositAmount, from: owner });
-            const depositBlockNum = await this.rootChain.getDepositBlock();
-            depositBlockNum.should.be.bignumber.equal(blknum.plus(new BigNumber(1)));
+            const blknum = await rootChain.getDepositBlock();
+            await rootChain.deposit({ value: depositAmount, from: owner });
+            const depositBlockNum = await rootChain.getDepositBlock();
+            depositBlockNum.should.be.bignumber.equal(blknum.plus(num1));
         })
     });
 
     describe("startDepositExit", () => {
         beforeEach(async () => {
-            await this.rootChain.deposit({ depositAmount, from: owner });
-            this.blknum = await this.rootChain.getDepositBlock();
-            await this.rootChain.deposit({ depositAmount, from: owner });
+            await rootChain.deposit({ value: depositAmount, from: owner });
+            this.blknum = await rootChain.getDepositBlock();
+            await rootChain.deposit({ value: depositAmount, from: owner });
             this.expectedUtxoPos = this.blknum.mul(utxoOrder);
         })
 
-        it("should be equal utxo_pos and exitable_at ", async () => {
-            const expectedExitable_at = (await latestTime()) + duration.weeks(2);
+        it("should be equal utxoPos and exitableAt ", async () => {
+            const expectedExitableAt = (await latestTime()) + duration.weeks(2);
 
-            await this.rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
-            const [utxo_pos, exitable_at] = await this.rootChain.getNextExit(ZERO_ADDRESS);
+            await rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
+            const [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
 
-            utxo_pos.should.be.bignumber.equal(this.expectedUtxoPos);
-            exitable_at.should.be.bignumber.equal(expectedExitable_at);
-            this.rootChain.getExit(utxo_pos).to.have.ordered.members([owner, ZERO_ADDRESS, depositAmount])
+            exitableAt.should.be.bignumber.equal(expectedExitableAt);
+            utxoPos.should.be.bignumber.equal(this.expectedUtxoPos);
 
+            const [expectedOwner, token, amount] = await rootChain.getExit(utxoPos);
+            expectedOwner.should.equal = owner;
+            token.should.equal = ZERO_ADDRESS;
+            amount.should.equal = depositAmount;
         });
 
         it("should fail if same deposit is exited twice", async () => {
-            await this.rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
-            await expectThrow(this.rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum), EVMRevert);
+            await rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
+            await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum), EVMRevert);
         });
 
         it("should fail if transaction sender is not the depositor", async () => {
-            await expectThrow(this.rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum, { from: nonOwner }), EVMRevert);
+            await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum, { from: nonOwner }), EVMRevert);
         });
 
-        it("should fail if utxo_pos is worng", async () => {
-            await expectThrow(this.rootChain.startDepositExit(this.expectedUtxoPos * 2, ZERO_ADDRESS, depositAmountNum), EVMRevert);
+        it("should fail if utxoPos is worng", async () => {
+            await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos * 2, ZERO_ADDRESS, depositAmountNum), EVMRevert);
         });
 
-        it("should fail if value given is not equal to deposited value", async () => {
-            await expectThrow(this.rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum + 1), EVMRevert);
-        })
+        it("should fail if value given is not equal to deposited value (mul 2)", async () => {
+            await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum * 2), EVMRevert);
+        });
     });
 
     describe("startFeeExit", () => {
+        it("feePriority should be larger than depositPriority", async () => {
+            let utxoPos, exitableAt;
 
+            const blknum = await rootChain.getDepositBlock();
+            await rootChain.deposit({ value: depositAmount, from: owner });
+            const expectedUtxoAt = await rootChain.getCurrentFeeExit();
+            const expectedExitableAt = (await latestTime()) + duration.weeks(2) + 1;
+
+            (await rootChain.getCurrentFeeExit()).should.be.bignumber.equal(num1);
+            await rootChain.startFeeExit(ZERO_ADDRESS, 1);
+            (await rootChain.getCurrentFeeExit()).should.be.bignumber.equal(num2);
+
+            [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
+            const feePriority = exitableAt << 128 | utxoPos;
+
+            utxoPos.should.be.bignumber.equal(expectedUtxoAt);
+            exitableAt.should.be.bignumber.equal(expectedExitableAt);
+
+            const expectedUtxoPos = blknum.mul(utxoOrder).plus(num1);
+            await rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmount);
+
+            [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
+            const depositPriotiy = exitableAt << 128 | utxoPos;
+            feePriority.should.to.be.above(depositPriotiy);
+        });
+
+        it("should fail if transaction sender isn't the authority", async () => {
+            await rootChain.deposit({ value: depositAmount, from: owner });
+            await expectThrow(rootChain.startFeeExit(ZERO_ADDRESS, 1, { from: nonOwner }), EVMRevert);
+        });
     });
 
     describe("startExit", () => {
