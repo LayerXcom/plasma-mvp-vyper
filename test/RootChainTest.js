@@ -162,6 +162,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const depositBlknum2 = await rootChain.getDepositBlock();
             depositBlknum2.should.be.bignumber.equal(new BigNumber(1001));
+            await rootChain.deposit({ value: depositAmount, from: owner });
             const tx3 = new Transaction(childBlknum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
         });
     });
