@@ -41,13 +41,13 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             new Buffer([]), // txindex2
             new Buffer([]), // oindex2
 
-            new Buffer([]) // fee
+            new Buffer([]), // fee
 
             utils.toBuffer(owner), // newowner1
             value.toArrayLike(Buffer, 'be', 32), // amount1
 
             utils.zeros(20), // newowner2
-            new Buffer([]), // amount2           
+            new Buffer([]) // amount2           
         ])
     }
 
@@ -152,7 +152,23 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         });
 
         it("cannot exit twice off of the same utxo", async () => {
-            const tx1 = new Transaction(0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0); // TODO
+            const tx1 = new Transaction([
+                new Buffer([]), // blkbum1
+                new Buffer([]), // txindex1
+                new Buffer([]), // oindex1
+
+                new Buffer([]), // blknum2
+                new Buffer([]), // txindex2
+                new Buffer([]), // oindex2
+
+                new Buffer([]), // fee
+
+                utils.toBuffer(owner), // newowner1
+                value.toArrayLike(Buffer, 'be', 32), // amount1
+
+                utils.zeros(20), // newowner2
+                new Buffer([]) // amount2           
+            ]);
             // const txBytes1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
             const depositBlknum = await rootChain.getDepositBlock();
