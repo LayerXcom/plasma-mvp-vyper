@@ -152,9 +152,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
 
             await rootChain.submitBlock(merkle.getRoot());
-            const confirmationSig1 = confirmTx(tx2, (await rootChain.getChildChain(childBlknum)[0]), owenerKey);
-            const priority2 = childBlknum * 1000000000 + 10000 * 0 + 0;
-            const sigs = tx2.sig1 + tx2.sig2 + confirmationSig1;
+
 
             const depositBlknum2 = await rootChain.getDepositBlock();
             depositBlknum2.should.be.bignumber.equal(new BigNumber(1001));
@@ -172,6 +170,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             childBlknum2.should.be.bignumber.equal(new BigNumber(2000));
 
             await rootChain.submitBlock(merkle.getRoot());
+            const confirmationSig1 = confirmTx(tx3, (await rootChain.getChildChain(childBlknum2)[0]), owenerKey);
+            const confirmationSig2 = confirmTx(tx3, (await rootChain.getChildChain(childBlknum2)[0]), owenerKey);
+
         });
     });
 
