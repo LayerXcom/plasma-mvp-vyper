@@ -91,6 +91,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
     describe("startExit", () => {
         it("cannot exit twice off of the same utxo", async () => {
+            let expectedOwner, tokenAddr, expectedAmount
             const tx1 = new Transaction(0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0)
             // const txBytes1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + depositAmount); // TODO
@@ -108,7 +109,10 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const utxoPos1 = depositBlkNum * 1000000000 + 10000 * 0 + 1;
             await expectThrow(rootChain.startExit(utxoPos1, depositTxHash, proof, sigs), EVMRevert);
-            (await rootChasin.getExit(priority1)).should.be.bignumber.equal()
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(priority1);
+            expectedOwner.should.equal(owner);
+            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            expectedAmount.should.be.bignumber.equal(depositAmount);
         })
     });
 
