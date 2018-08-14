@@ -171,12 +171,13 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             ]);
             const txBytes1 = utils.bufferToHex(tx1.serializeTx());
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
+            const merkleHash = tx1.merkleHash();
             const depositBlknum = await rootChain.getDepositBlock();
             depositBlknum.should.be.bignumber.equal(num1);
 
             await rootChain.deposit({ value: depositAmount, from: owner });
-            const merkle = new FixedMerkleTree(16, [depositTxHash]);
-            const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(depositTxHash)));
+            const merkle = new FixedMerkleTree(16, [merkleHash]);
+            const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(merkleHash)));
             const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlknum)[0]), owenerKey);
 
             const priority1 = depositBlknum * 1000000000 + 10000 * 0 + 1;
