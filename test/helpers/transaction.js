@@ -31,6 +31,10 @@ const getFields = () => [
         default: new Buffer([])
     },
     {
+        name: 'fee',
+        default: new Buffer([])
+    },
+    {
         name: 'newowner1',
         length: 20,
         default: utils.zeros(20)
@@ -46,10 +50,6 @@ const getFields = () => [
     },
     {
         name: 'amount2',
-        default: new Buffer([])
-    },
-    {
-        name: 'fee',
         default: new Buffer([])
     },
     {

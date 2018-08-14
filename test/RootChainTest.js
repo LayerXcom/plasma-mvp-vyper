@@ -33,26 +33,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     const nonOwnerKey = keys[1];
     const ZERO_ADDRESS = utils.bufferToHex(utils.zeros(20));
 
-    const getDepositTx = (owner, value) => {
-        return new Transaction([
-            new Buffer([]), // blkbum1
-            new Buffer([]), // txindex1
-            new Buffer([]), // oindex1
-
-            new Buffer([]), // blknum2
-            new Buffer([]), // txindex2
-            new Buffer([]), // oindex2
-
-            new Buffer([]), // fee
-
-            utils.toBuffer(owner), // newowner1
-            value.toArrayLike(Buffer, 'be', 32), // amount1
-
-            utils.zeros(20), // newowner2
-            new Buffer([]) // amount2           
-        ])
-    }
-
     beforeEach(async () => {
         priorityQueue = await PriorityQueue.new();
         rootChain = await RootChain.new(priorityQueue.address, { from: owner });
@@ -166,7 +146,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 new Buffer([]), // fee
 
                 utils.toBuffer(owner), // newowner1
-                depositAmount.toArrayLike(Buffer, 'be', 32), // amount1
+                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
 
                 utils.zeros(20), // newowner2
                 new Buffer([]) // amount2           
