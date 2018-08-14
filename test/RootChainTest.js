@@ -96,7 +96,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         });
 
         it("cannot exit twice off of the same utxo", async () => {
-            const tx1 = new Transaction(0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
+            const tx1 = new Transaction(0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0); // TODO
             // const txBytes1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + depositAmount); // TODO
             const depositBlknum = await rootChain.getDepositBlock();
@@ -163,7 +163,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const depositBlknum2 = await rootChain.getDepositBlock();
             depositBlknum2.should.be.bignumber.equal(new BigNumber(1001));
             await rootChain.deposit({ value: depositAmount, from: owner });
-            const tx3 = new Transaction(childBlknum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
+            const tx3 = new Transaction(childBlknum, 0, 0, depositBlknum2, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
+            tx3.sign1(key);
+            tx3.sign2(key);
         });
     });
 
