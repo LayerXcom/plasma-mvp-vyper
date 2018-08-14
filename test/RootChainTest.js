@@ -83,7 +83,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos * 2, ZERO_ADDRESS, depositAmountNum), EVMRevert);
         });
 
-        // Here will fail if the 3rd argument is "depositAmountNum + m (-8 <= m <= 8)" because of convert(_amount, "bytes32") in L.260
         it("should fail if value given is not equal to deposited value (mul 2)", async () => {
             await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum * 2), EVMRevert);
         });
