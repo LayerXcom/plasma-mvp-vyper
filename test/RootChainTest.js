@@ -31,6 +31,26 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     const nonOwnerKey = keys[1];
     const ZERO_ADDRESS = utils.bufferToHex(utils.zeros(20));
 
+    const getDepositTx = (owner, value) => {
+        return new Transaction([
+            new Buffer([]), // blkbum1
+            new Buffer([]), // txindex1
+            new Buffer([]), // oindex1
+
+            new Buffer([]), // blknum2
+            new Buffer([]), // txindex2
+            new Buffer([]), // oindex2
+
+            new Buffer([]) // fee
+
+            utils.toBuffer(owner), // newowner1
+            value.toArrayLike(Buffer, 'be', 32), // amount1
+
+            utils.zeros(20), // newowner2
+            new Buffer([]), // amount2           
+        ])
+    }
+
     beforeEach(async () => {
         priorityQueue = await PriorityQueue.new();
         rootChain = await RootChain.new(priorityQueue.address, { from: owner });
@@ -134,7 +154,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         it("cannot exit twice off of the same utxo", async () => {
             const tx1 = new Transaction(0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0); // TODO
             // const txBytes1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
-            const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + depositAmount); // TODO
+            const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
             const depositBlknum = await rootChain.getDepositBlock();
             depositBlknum.should.be.bignumber.equal(num1);
 
@@ -142,6 +162,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const merkle = new FixedMerkleTree(16, [depositTxHash]);
             const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(depositTxHash)));
             const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlknum)[0]), owenerKey);
+
             const priority1 = depositBlknum * 1000000000 + 10000 * 0 + 1;
             const sigs = tx1.sig1 + tx1.sig2 + confirmationSig1;
             const utxoId = depositBlknum * 1000000000 + 10000 * 0 + 1;
@@ -162,8 +183,10 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.deposit({ value: depositAmount, from: owner });
             const depositBlknum = await rootChain.getDepositBlock();
             const tx2 = new Transaction(depositBlknum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
+
             tx2.sign1(owenerKey);
             txBytes2 = rlp.encode(tx2); // TODO
+
             const merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(tx2.merkleHash)));
             const childBlknum = await rootChain.getCurrentChildBlock();
@@ -176,6 +199,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const utxoPos2 = childBlknum * 1000000000 + 10000 * 0 + 0;
             await rootChain.startExit(utxoPos2, txBytes2, proof, sigs);
+
             [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(priority2);
             expectedOwner.should.equal(owner);
             tokenAddr.shoudl.equal(ZERO_ADDRESS);
@@ -210,6 +234,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.submitBlock(merkle.getRoot());
             const confirmationSig1 = confirmTx(tx3, (await rootChain.getChildChain(childBlknum2)[0]), owenerKey);
             const confirmationSig2 = confirmTx(tx3, (await rootChain.getChildChain(childBlknum2)[0]), owenerKey);
+
             const priority3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
             const sigs = tx2.sig1 + tx2.sig2 + confirmationSig1 + confirmationSig2;
             const utxoPos3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
