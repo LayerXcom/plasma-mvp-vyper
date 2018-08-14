@@ -7,8 +7,8 @@ const FixedMerkleTree = require('./helpers/fixedMerkleTree');
 const Transaction = require('./helpers/transaction');
 const { keys } = require('./helpers/keys');
 
-const RootChain = artifacts.require("root_chain.vyper");
-const PriorityQueue = artifacts.require("priority_queue.vyper");
+const RootChain = artifacts.require("root_chain");
+const PriorityQueue = artifacts.require("priority_queue");
 
 const rlp = utils.rlp;
 const BigNumber = web3.BigNumber;
@@ -34,12 +34,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     beforeEach(async () => {
         priorityQueue = await PriorityQueue.new();
         rootChain = await RootChain.new(priorityQueue.address, { from: owner });
-    });
-
-    describe("submitBlock", () => {
-        it("should update block numbers", async () => {
-
-        });
     });
 
     describe("deposit", () => {
