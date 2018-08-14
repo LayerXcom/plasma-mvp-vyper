@@ -54,14 +54,18 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         })
 
         it("should be equal utxo_pos and exitable_at ", async () => {
-            const expectedExitable_at = (await latestTime()) + duration.weeks(2);
+            const expectedExitableAt = (await latestTime()) + duration.weeks(2);
 
             await rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
-            const [utxo_pos, exitable_at] = await rootChain.getNextExit(ZERO_ADDRESS);
+            const [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
 
-            utxo_pos.should.be.bignumber.equal(this.expectedUtxoPos);
-            exitable_at.should.be.bignumber.equal(expectedExitable_at);
-            rootChain.getExit(utxo_pos).to.have.ordered.members([owner, ZERO_ADDRESS, depositAmount])
+            exitableAt.should.be.bignumber.equal(expectedExitableAt);
+            utxoPos.should.be.bignumber.equal(this.expectedUtxoPos);
+
+            const [expectedOwner, token, amount] = await rootChain.getExit(utxoPos);
+            expectedOwner.should.equal = owner;
+            token.should.equal = ZERO_ADDRESS;
+            amount.should.equal = depositAmount;
 
         });
 
@@ -79,7 +83,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         });
 
         it("should fail if value given is not equal to deposited value", async () => {
-            await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum + 1), EVMRevert);
+            await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum), EVMRevert);
         })
     });
 
