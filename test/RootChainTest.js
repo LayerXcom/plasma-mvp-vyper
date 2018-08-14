@@ -130,6 +130,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
 
             await rootChain.submitBlock(merkle.getRoot());
+            const confirmationSig1 = confirmTx(tx2, (await rootChain.getChildChain(childBlknum)[0]), owenerKey);
         });
     });
 
