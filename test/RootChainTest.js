@@ -150,9 +150,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const childBlknum = await rootChain.currentChildBlock();
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
-
             await rootChain.submitBlock(merkle.getRoot());
-
 
             const depositBlknum2 = await rootChain.getDepositBlock();
             depositBlknum2.should.be.bignumber.equal(new BigNumber(1001));
@@ -177,6 +175,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const utxoPos3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
 
             await rootChain.startExit(utxoPos3, txBytes3, proof, sigs);
+
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(priority3);
+
         });
     });
 
