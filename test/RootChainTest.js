@@ -125,6 +125,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             tx2.sign1(key);
             txBytes2 = rlp.encode()
             const merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
+            const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(tx2.merkleHash)));
 
         });
     });
