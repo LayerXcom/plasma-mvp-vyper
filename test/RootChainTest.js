@@ -1,6 +1,6 @@
 const utils = require("ethereumjs-util");
 const { latestTime } = require('./helpers/latestTime');
-const { increaseTimeTo, duration } = require('./helpers/increaseTime');
+const { increaseTime, duration } = require('./helpers/increaseTime');
 const { EVMRevert } = require('./helpers/EVMRevert');
 const { expectThrow } = require('./helpers/expectThrow');
 const FixedMerkleTree = require('./helpers/fixedMerkleTree');
@@ -110,6 +110,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const sigs = tx1.sig1 + tx1.sig2 + confirmationSig1;
             const utxoId = depositBlkNum * 1000000000 + 10000 * 0 + 1;
             await rootChain.startDepositExit(utxoId, ZERO_ADDRESS, tx1.amount1);
+            await increaseTime(duration.weeks(1.5));
 
             const utxoPos1 = depositBlkNum * 1000000000 + 10000 * 0 + 1;
             await expectThrow(rootChain.startExit(utxoPos1, depositTxHash, proof, sigs), EVMRevert);
