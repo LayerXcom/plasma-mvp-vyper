@@ -143,7 +143,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 new Buffer([]), // txindex2
                 new Buffer([]), // oindex2
 
-                new Buffer([]), // fee
+                utils.zeros(20), // token address
 
                 utils.toBuffer(owner), // newowner1
                 depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
@@ -182,6 +182,23 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.deposit({ value: depositAmount, from: owner });
             const depositBlknum = await rootChain.getDepositBlock();
             const tx2 = new Transaction(depositBlknum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
+            const tx2 = new Transaction([
+                depositBlknum.toArrayLike(Buffer, 'be', 32), // blkbum1
+                new Buffer([]), // txindex1
+                new Buffer([]), // oindex1
+
+                new Buffer([]), // blknum2
+                new Buffer([]), // txindex2
+                new Buffer([]), // oindex2
+
+                utils.zeros(20), // token address
+
+                utils.toBuffer(owner), // newowner1
+                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+
+                utils.zeros(20), // newowner2
+                new Buffer([]) // amount2           
+            ]);
 
             tx2.sign1(owenerKey);
             txBytes2 = rlp.encode(tx2); // TODO
