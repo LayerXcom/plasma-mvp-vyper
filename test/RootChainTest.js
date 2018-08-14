@@ -174,6 +174,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const confirmationSig2 = confirmTx(tx3, (await rootChain.getChildChain(childBlknum2)[0]), owenerKey);
             const priority3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
             const sigs = tx2.sig1 + tx2.sig2 + confirmationSig1 + confirmationSig2;
+            const utxoPos3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
+
+            await rootChain.startExit(utxoPos3, txBytes3, proof, sigs);
         });
     });
 
