@@ -109,11 +109,13 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const priority1 = depositBlkNum * 1000000000 + 10000 * 0 + 1;
             const sigs = tx1.sig1 + tx1.sig2 + confirmationSig1;
             const utxoId = depositBlkNum * 1000000000 + 10000 * 0 + 1;
+
             await rootChain.startDepositExit(utxoId, ZERO_ADDRESS, tx1.amount1);
             await increaseTime(duration.weeks(1.5));
 
             const utxoPos1 = depositBlkNum * 1000000000 + 10000 * 0 + 1;
             await expectThrow(rootChain.startExit(utxoPos1, depositTxHash, proof, sigs), EVMRevert);
+
             [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(priority1);
             expectedOwner.should.equal(owner);
             tokenAddr.shoudl.equal(ZERO_ADDRESS);
@@ -141,6 +143,10 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             expectedOwner.should.equal(owner);
             tokenAddr.shoudl.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
+        });
+
+        it("can exit double input", async () => {
+
         });
     });
 
