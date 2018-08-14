@@ -199,8 +199,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 new Buffer([]) // amount2           
             ]);
 
+            const txBytes2 = utils.bufferToHex(tx2.serializeTx());
             tx2.sign1(owenerKey);
-            txBytes2 = rlp.encode(tx2); // TODO
 
             const merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
             const merkleHash = merkle.merkleHash();
