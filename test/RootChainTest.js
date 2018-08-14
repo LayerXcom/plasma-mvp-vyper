@@ -90,7 +90,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     });
 
     describe("startExit", () => {
-        let expectedOwner, tokenAddr, expectedAmount
+        let expectedOwner, tokenAddr, expectedAmount;
         beforeEach(async () => {
 
         });
@@ -136,6 +136,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const utxoPos2 = childBlknum * 1000000000 + 10000 * 0 + 0;
             await rootChain.startExit(utxoPos2, txBytes2, proof, sigs);
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(priority2);
         });
     });
 
