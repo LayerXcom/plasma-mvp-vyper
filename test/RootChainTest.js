@@ -148,8 +148,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         it("can exit double input", async () => {
             await rootChain.deposit({ value: depositAmount, from: owner });
 
-            const merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
-            const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(tx2.merkleHash)));
             const childBlknum = await rootChain.currentChildBlock();
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
 
@@ -168,6 +166,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const txBytes3 = rlp.encode(tx3); // TODO
             const merkle = new FixedMerkleTree(16, [tx3.merkleHash]);
+            const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(tx3.merkleHash)));
         });
     });
 
