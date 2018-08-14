@@ -177,7 +177,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.startExit(utxoPos3, txBytes3, proof, sigs);
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(priority3);
-
+            expectedOwner.should.equal(owner);
+            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            expectedAmount.should.be.bignumber.equal(depositAmount);
         });
     });
 
