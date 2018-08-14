@@ -164,12 +164,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 new Buffer([]), // fee
 
                 utils.toBuffer(owner), // newowner1
-                value.toArrayLike(Buffer, 'be', 32), // amount1
+                depositAmount.toArrayLike(Buffer, 'be', 32), // amount1
 
                 utils.zeros(20), // newowner2
                 new Buffer([]) // amount2           
             ]);
-            const txBytes1 = utils.bufferToHex(tx1.serializeTx())
+            const txBytes1 = utils.bufferToHex(tx1.serializeTx());
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
             const depositBlknum = await rootChain.getDepositBlock();
             depositBlknum.should.be.bignumber.equal(num1);
