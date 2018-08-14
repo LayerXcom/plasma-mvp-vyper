@@ -244,8 +244,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.zeros(20), // newowner2
                 new Buffer([]) // amount2           
             ]);
-            let merkleHash = merkle.merkleHash();
-            let merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
+            let merkleHash = tx2.merkleHash();
+            let merkle = new FixedMerkleTree(16, [merkleHash]);
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
             await rootChain.submitBlock(merkle.getRoot());
 
@@ -275,8 +275,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             tx3.sign2(owenerKey);
 
             const txBytes3 = rlp.encode(tx3); // TODO
-            merkle = new FixedMerkleTree(16, [tx3.merkleHash]);
-            const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(tx3.merkleHash)));
+            merkleHash = tx3.merkleHash();
+            merkle = new FixedMerkleTree(16, [merkleHash]);
+            const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(merkleHash)));
 
             const childBlknum2 = await rootChain.getCurrentChildBlock();
             childBlknum2.should.be.bignumber.equal(new BigNumber(2000));
