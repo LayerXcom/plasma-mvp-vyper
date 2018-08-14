@@ -169,7 +169,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.zeros(20), // newowner2
                 new Buffer([]) // amount2           
             ]);
-            // const txBytes1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
+            const txBytes1 = utils.bufferToHex(tx1.serializeTx())
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
             const depositBlknum = await rootChain.getDepositBlock();
             depositBlknum.should.be.bignumber.equal(num1);
