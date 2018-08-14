@@ -225,7 +225,23 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.deposit({ value: depositAmount, from: owner });
             const depositBlknum = await rootChain.getDepositBlock();
             const childBlknum = await rootChain.getCurrentChildBlock();
-            const tx2 = new Transaction(depositBlknum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
+            const tx2 = new Transaction([
+                depositBlknum.toArrayLike(Buffer, 'be', 32), // blkbum1
+                new Buffer([]), // txindex1
+                new Buffer([]), // oindex1
+
+                new Buffer([]), // blknum2
+                new Buffer([]), // txindex2
+                new Buffer([]), // oindex2
+
+                utils.zeros(20), // token address
+
+                utils.toBuffer(owner), // newowner1
+                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+
+                utils.zeros(20), // newowner2
+                new Buffer([]) // amount2           
+            ]);
 
             let merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
@@ -235,7 +251,24 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             depositBlknum2.should.be.bignumber.equal(new BigNumber(1001));
 
             await rootChain.deposit({ value: depositAmount, from: owner });
-            const tx3 = new Transaction(childBlknum, 0, 0, depositBlknum2, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
+            const tx3 = new Transaction([
+                childBlknum.toArrayLike(Buffer, 'be', 32), // blkbum1
+                new Buffer([]), // txindex1
+                new Buffer([]), // oindex1
+
+                depositBlknum2.toArrayLike(Buffer, 'be', 32), // blknum2
+                new Buffer([]), // txindex2
+                new Buffer([]), // oindex2
+
+                utils.zeros(20), // token address
+
+                utils.toBuffer(owner), // newowner1
+                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+
+                utils.zeros(20), // newowner2
+                new Buffer([]) // amount2           
+            ]);
+
             tx3.sign1(owenerKey);
             tx3.sign2(owenerKey);
 
