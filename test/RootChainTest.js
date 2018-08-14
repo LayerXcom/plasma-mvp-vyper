@@ -127,6 +127,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(tx2.merkleHash)));
             const childBlknum = await rootChain.currentChildBlock();
+            childBlknum.should.be.bignumber.equal(new BigNumber(1000));
         });
     });
 
