@@ -93,7 +93,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         it("", async () => {
             const tx1 = new Transaction(0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0)
             // const txBytes1 = rlp.encode([0, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0]);
-            const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + depositAmount);
+            const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + depositAmount); // TODO
             const depositBlkNum = await rootChain.getDepositBlock();
             depositBlkNum.should.be.equal(num1);
 
@@ -103,7 +103,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlkNum)[0]), owenerKey);
             const priority1 = depositBlkNum * 1000000000 + 10000 * 0 + 1;
             const sigs = tx1.sig1 + tx1.sig2 + confirmationSig1;
-
+            const utxoId = depositBlkNum * 1000000000 + 10000 * 0 + 1;
+            await rootChain.startDepositExit(utxoId, ZERO_ADDRESS, tx1.amount1);
         })
     });
 
