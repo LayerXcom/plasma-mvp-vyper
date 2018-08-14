@@ -25,7 +25,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     const depositAmount = new BigNumber(web3.toWei(0.01, 'ether'));
     const depositAmountBN = new BN(web3.toWei(0.01, 'ether'));
     const depositAmountNum = Number(depositAmount);
-    const utxoOrder = new BigNumber(100000000);
+    const utxoOrder = new BigNumber(1000000000);
     const num1 = new BigNumber(1);
     const num2 = new BigNumber(2);
 
@@ -78,19 +78,31 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
         it("should fail if same deposit is exited twice", async () => {
             await rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum);
-            await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum), EVMRevert);
+            await expectThrow(
+                rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum),
+                EVMRevert
+            );
         });
 
         it("should fail if transaction sender is not the depositor", async () => {
-            await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum, { from: nonOwner }), EVMRevert);
+            await expectThrow(
+                rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum, { from: nonOwner }),
+                EVMRevert
+            );
         });
 
         it("should fail if utxoPos is worng", async () => {
-            await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos * 2, ZERO_ADDRESS, depositAmountNum), EVMRevert);
+            await expectThrow(
+                rootChain.startDepositExit(this.expectedUtxoPos * 2, ZERO_ADDRESS, depositAmountNum),
+                EVMRevert
+            );
         });
 
         it("should fail if value given is not equal to deposited value (mul 2)", async () => {
-            await expectThrow(rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum * 2), EVMRevert);
+            await expectThrow(
+                rootChain.startDepositExit(this.expectedUtxoPos, ZERO_ADDRESS, depositAmountNum * 2),
+                EVMRevert
+            );
         });
     });
 
@@ -100,6 +112,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const blknum = await rootChain.getDepositBlock();
             await rootChain.deposit({ value: depositAmount, from: owner });
+
             const expectedUtxoAt = await rootChain.getCurrentFeeExit();
             const expectedExitableAt = (await latestTime()) + duration.weeks(2) + 1;
 
@@ -151,15 +164,18 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.zeros(20), // newowner2
                 new Buffer([]) // amount2           
             ]);
+
             const txBytes1 = utils.bufferToHex(tx1.serializeTx());
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
-            const merkleHash = tx1.merkleHash();
+
             const depositBlknum = await rootChain.getDepositBlock();
             depositBlknum.should.be.bignumber.equal(num1);
 
             await rootChain.deposit({ value: depositAmount, from: owner });
-            const tree = new FixedMerkleTree(16, [merkleHash]);
-            const proof = utils.bufferToHex(Buffer.concat(tree.getplasmaProof(merkleHash)));
+
+            let merkleHash = tx1.merkleHash();
+            let tree = new FixedMerkleTree(16, [merkleHash]);
+            let proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
             const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlknum)[0]), owenerKey);
 
             const priority1 = depositBlknum * 1000000000 + 10000 * 0 + 1;
@@ -204,13 +220,19 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const merkleHash = tx2.merkleHash();
             const tree = new FixedMerkleTree(16, [merkleHash]);
-            const proof = utils.bufferToHex(Buffer.concat(tree.getplasmaProof(merkleHash)));
+            const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             const childBlknum = await rootChain.getCurrentChildBlock();
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
 
             await rootChain.submitBlock(tree.getRoot());
-            const confirmationSig1 = confirmTx(tx2, (await rootChain.getChildChain(childBlknum)[0]), owenerKey);
+
+            const confirmationSig1 = confirmTx(
+                tx2,
+                (await rootChain.getChildChain(childBlknum)[0]),
+                owenerKey
+            );
+
             const priority2 = childBlknum * 1000000000 + 10000 * 0 + 0;
             const sigs = tx2.sig1 + tx2.sig2 + confirmationSig1;
 
@@ -286,8 +308,18 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             childBlknum2.should.be.bignumber.equal(new BigNumber(2000));
 
             await rootChain.submitBlock(merkle.getRoot());
-            const confirmationSig1 = confirmTx(tx3, (await rootChain.getChildChain(childBlknum2)[0]), owenerKey);
-            const confirmationSig2 = confirmTx(tx3, (await rootChain.getChildChain(childBlknum2)[0]), owenerKey);
+
+            const confirmationSig1 = confirmTx(
+                tx3,
+                (await rootChain.getChildChain(childBlknum2)[0]),
+                owenerKey
+            );
+
+            const confirmationSig2 = confirmTx(
+                tx3,
+                (await rootChain.getChildChain(childBlknum2)[0]),
+                owenerKey
+            );
 
             const priority3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
             const sigs = tx2.sig1 + tx2.sig2 + confirmationSig1 + confirmationSig2;
