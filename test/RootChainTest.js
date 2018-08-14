@@ -161,6 +161,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const sigs = tx2.sig1 + tx2.sig2 + confirmationSig1;
 
             const depositBlknum2 = await rootChain.getDepositBlock();
+            depositBlknum2.should.be.bignumber.equal(new BigNumber(1001));
             const tx3 = new Transaction(childBlknum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
         });
     });
