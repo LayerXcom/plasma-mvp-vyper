@@ -11,7 +11,8 @@ const RootChain = artifacts.require("root_chain");
 const PriorityQueue = artifacts.require("priority_queue");
 
 const rlp = utils.rlp;
-const BigNumber = utils.BN;
+const BigNumber = web3.BigNumber;
+const BN = utils.BN;
 
 require('chai')
     .use(require('chai-as-promised'))
@@ -22,6 +23,7 @@ require('chai')
 contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     let rootChain;
     const depositAmount = new BigNumber(web3.toWei(0.1, 'ether'));
+    const depositAmountBN = new BN(web3.toWei(0.1, 'ether'));
     const depositAmountNum = Number(depositAmount);
     const utxoOrder = new BigNumber(1000000000);
     const num1 = new BigNumber(1);
