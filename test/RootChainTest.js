@@ -203,7 +203,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             txBytes2 = rlp.encode(tx2); // TODO
 
             const merkle = new FixedMerkleTree(16, [tx2.merkleHash]);
-            const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(tx2.merkleHash)));
+            const merkleHash = merkle.merkleHash();
+            const proof = utils.bufferToHex(Buffer.concat(merkle.getplasmaProof(merkleHash)));
             const childBlknum = await rootChain.getCurrentChildBlock();
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
 
