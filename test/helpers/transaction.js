@@ -31,8 +31,8 @@ const getFields = () => [
         default: new Buffer([])
     },
     {
-        name: 'fee',
-        default: new Buffer([])
+        name: 'tokenAddress',
+        default: utils.zeros(20)
     },
     {
         name: 'newowner1',

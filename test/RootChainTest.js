@@ -22,10 +22,10 @@ require('chai')
 
 contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     let rootChain;
-    const depositAmount = new BigNumber(web3.toWei(0.1, 'ether'));
-    const depositAmountBN = new BN(web3.toWei(0.1, 'ether'));
+    const depositAmount = new BigNumber(web3.toWei(0.01, 'ether'));
+    const depositAmountBN = new BN(web3.toWei(0.01, 'ether'));
     const depositAmountNum = Number(depositAmount);
-    const utxoOrder = new BigNumber(1000000000);
+    const utxoOrder = new BigNumber(100000000);
     const num1 = new BigNumber(1);
     const num2 = new BigNumber(2);
 
@@ -181,7 +181,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         it("can exit single input", async () => {
             await rootChain.deposit({ value: depositAmount, from: owner });
             const depositBlknum = await rootChain.getDepositBlock();
-            const tx2 = new Transaction(depositBlknum, 0, 0, 0, 0, 0, ZERO_ADDRESS, owner, depositAmount, ZERO_ADDRESS, 0);
             const tx2 = new Transaction([
                 depositBlknum.toArrayLike(Buffer, 'be', 32), // blkbum1
                 new Buffer([]), // txindex1
