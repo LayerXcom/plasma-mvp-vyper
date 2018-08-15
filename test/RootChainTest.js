@@ -401,7 +401,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             tree = new FixedMerkleTree(16, [merkleHash]);
             proof = proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
-            const childBlknum = await rootChain.getCurrentChildBlock();
+            let childBlknum = await rootChain.getCurrentChildBlock();
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
             sigs = utils.bufferToHex(
                 Buffer.concat([
@@ -431,6 +431,13 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const txBytes4 = utils.bufferToHex(tx4.serializeTx());
             tx4.sign1(owenerKey);
+
+            merkleHash = tx4.merkleHash();
+            tree = new FixedMerkleTree(16, [merkleHash]);
+            proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
+
+            childBlknum = await rootChain.getCurrentChildBlock();
+
         });
     });
 
