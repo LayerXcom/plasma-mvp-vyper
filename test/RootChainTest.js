@@ -337,7 +337,28 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     });
 
     describe("challengeExit", () => {
+        const tx1 = new Transaction([
+            Buffer.from([]), // blkbum1
+            Buffer.from([]), // txindex1
+            Buffer.from([]), // oindex1
 
+            Buffer.from([]), // blknum2
+            Buffer.from([]), // txindex2
+            Buffer.from([]), // oindex2
+
+            utils.zeros(20), // token address
+
+            utils.toBuffer(owner), // newowner1
+            depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+
+            utils.zeros(20), // newowner2
+            Buffer.from([]) // amount2           
+        ]);
+        const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
+        const depositBlknum = await rootChain.getDepositBlock();
+
+        const utxoPos1 = Number(depositBlknum) * 1000000000 + 1;
+        await rootChain.deposit({ value: depositAmount, from: owner });
     });
 
     describe("finalizeExits", () => {
