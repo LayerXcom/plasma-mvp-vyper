@@ -359,6 +359,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
         const utxoPos1 = Number(depositBlknum) * 1000000000 + 1;
         await rootChain.deposit({ value: depositAmount, from: owner });
+        const utxoPos2 = Number(depositBlknum) * 1000000000;
+        await rootChain.deposit({ value: depositAmount, from: owner });
     });
 
     describe("finalizeExits", () => {
