@@ -364,6 +364,15 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
         const tree = new FixedMerkleTree(16, [depositTxHash]);
         const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(depositTxHash)));
+
+        const [root, _] = await rootChain.getChildChain(Number(utxoPos1));
+        const sigs = utils.bufferToHex(
+            Buffer.concat([
+                tx1.sig1,
+                tx1.sig2,
+                tx1.confirmSig(utils.toBuffer(root), owenerKey)
+            ])
+        );
     });
 
     describe("finalizeExits", () => {
