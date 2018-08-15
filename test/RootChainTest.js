@@ -176,7 +176,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const merkleHash = tx1.merkleHash();
             const tree = new FixedMerkleTree(16, [merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
-            // const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlknum)[0]), owenerKey);
+
             const [root, _] = await rootChain.getChildChain(Number(depositBlknum));
             const sigs = utils.bufferToHex(
                 Buffer.concat([
@@ -190,15 +190,15 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const utxoId = depositBlknum * 1000000000 + 10000 * 0 + 1;
 
             await rootChain.startDepositExit(utxoId, ZERO_ADDRESS, Number(tx1.amount1));
-            // await increaseTime(duration.weeks(1.5));
+            await increaseTime(duration.weeks(1.5));
 
-            // const utxoPos1 = depositBlknum * 1000000000 + 10000 * 0 + 1;
-            // await expectThrow(rootChain.startExit(utxoPos1, depositTxHash, proof, sigs), EVMRevert);
+            const utxoPos1 = depositBlknum * 1000000000 + 10000 * 0 + 1;
+            await expectThrow(rootChain.startExit(utxoPos1, depositTxHash, proof, sigs), EVMRevert);
 
-            // [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(priority1);
-            // expectedOwner.should.equal(owner);
-            // tokenAddr.shoudl.equal(ZERO_ADDRESS);
-            // expectedAmount.should.be.bignumber.equal(depositAmount);
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(priority1);
+            expectedOwner.should.equal(owner);
+            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            expectedAmount.should.be.bignumber.equal(depositAmount);
         });
 
         it("can exit single input", async () => {
@@ -206,12 +206,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const depositBlknum = await rootChain.getDepositBlock();
             const tx2 = new Transaction([
                 (new BN(Number(depositBlknum))).toArrayLike(Buffer, 'be', 32), // blkbum1
-                new Buffer([]), // txindex1
-                new Buffer([]), // oindex1
+                Buffer.from([]), // txindex1
+                Buffer.from([]), // oindex1
 
-                new Buffer([]), // blknum2
-                new Buffer([]), // txindex2
-                new Buffer([]), // oindex2
+                Buffer.from([]), // blknum2
+                Buffer.from([]), // txindex2
+                Buffer.from([]), // oindex2
 
                 utils.zeros(20), // token address
 
@@ -219,7 +219,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
 
                 utils.zeros(20), // newowner2
-                new Buffer([]) // amount2           
+                Buffer.from([]) // amount2           
             ]);
 
             const txBytes2 = utils.bufferToHex(tx2.serializeTx());
@@ -266,12 +266,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const tx2 = new Transaction([
                 (new BN(Number(depositBlknum))).toArrayLike(Buffer, 'be', 32), // blkbum1
-                new Buffer([]), // txindex1
-                new Buffer([]), // oindex1
+                Buffer.from([]), // txindex1
+                Buffer.from([]), // oindex1
 
-                new Buffer([]), // blknum2
-                new Buffer([]), // txindex2
-                new Buffer([]), // oindex2
+                Buffer.from([]), // blknum2
+                Buffer.from([]), // txindex2
+                Buffer.from([]), // oindex2
 
                 utils.zeros(20), // token address
 
@@ -279,7 +279,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
 
                 utils.zeros(20), // newowner2
-                new Buffer([]) // amount2           
+                Buffer.from([]) // amount2           
             ]);
 
             let merkleHash = tx2.merkleHash();
@@ -294,12 +294,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const tx3 = new Transaction([
                 (new BN(Number(childBlknum))).toArrayLike(Buffer, 'be', 32), // blkbum1
-                new Buffer([]), // txindex1
-                new Buffer([]), // oindex1
+                Buffer.from([]), // txindex1
+                Buffer.from([]), // oindex1
 
                 (new BN(Number(depositBlknum2))).toArrayLike(Buffer, 'be', 32), // blknum2
-                new Buffer([]), // txindex2
-                new Buffer([]), // oindex2
+                Buffer.from([]), // txindex2
+                Buffer.from([]), // oindex2
 
                 utils.zeros(20), // token address
 
@@ -307,7 +307,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
 
                 utils.zeros(20), // newowner2
-                new Buffer([]) // amount2           
+                Buffer.from([]) // amount2           
             ]);
 
             const txBytes3 = utils.bufferToHex(tx3.serializeTx());

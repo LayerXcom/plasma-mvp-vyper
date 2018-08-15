@@ -117,14 +117,6 @@ class Transaction {
         return utils.toBuffer(utils.toRpcSig(vrs.v, vrs.r, vrs.s))
     }
 
-    confirmTx(tx, root, privateKey) {
-        const vrs = utils.ecsign(
-            utils.sha3(Buffer.concat([utils.rlphash(tx), root])),
-            privateKey
-        );
-        return utils.toBuffer(utils.toRpcSig(vrs.v, vrs.r, vrs.s))
-    }
-
     serializeTx(includeSignature = false) {
         if (includeSignature) {
             return this.serialize()
