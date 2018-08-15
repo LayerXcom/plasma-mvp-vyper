@@ -139,16 +139,21 @@ def getDepositBlock() -> uint256:
 def getExit(_utxoPos: uint256) -> (address, address, uint256):
     return self.exits[_utxoPos].owner, self.exits[_utxoPos].token, self.exits[_utxoPos].amount
 
+# @dev Returns currentFeeExit
+@public
+@constant
+def getCurrentFeeExit() -> uint256:
+    return self.currentFeeExit
+
 # @dev Determines the next exit to be processed.
 @public
 @constant
 def getNextExit(_token: address) -> (uint256, uint256):
     priority: uint256 = PriorityQueue(self.exitsQueues[_token]).getMin()
-    # NOTE: Is this double convert needed?
-    utxoPos: uint256 = convert(convert(priority, "int128"), "uint256")
+    # Cut the first 128 digits which represents exitable_at.
+    utxoPos: uint256 = shift(shift(priority, 128), -128)
     exitable_at: uint256 = shift(priority, -128)
     return utxoPos, exitable_at
-
 
 
 # @dev Constructor

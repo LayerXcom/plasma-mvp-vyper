@@ -1,5 +1,5 @@
-const RootChain = artifacts.require("./plasma_mvp/root_chain.vyper");
-const PriorityQueue = artifacts.require("./plasma_mvp/priority_queue.vyper");
+const RootChain = artifacts.require("root_chain");
+const PriorityQueue = artifacts.require("priority_queue");
 
 module.exports = (deployer) => {
     deployer.deploy(PriorityQueue)

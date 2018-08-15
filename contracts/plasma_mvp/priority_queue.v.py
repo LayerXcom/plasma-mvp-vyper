@@ -6,7 +6,9 @@ currentSize: uint256
 # look at https://github.com/ethereum/vyper/issues/773#issuecomment-383714363
 @public
 def setup() -> bool:
+    assert self.owner == ZERO_ADDRESS
     self.owner = msg.sender
+    assert self.owner != ZERO_ADDRESS
     return True
 
 @private
