@@ -361,6 +361,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         await rootChain.deposit({ value: depositAmount, from: owner });
         const utxoPos2 = Number(depositBlknum) * 1000000000;
         await rootChain.deposit({ value: depositAmount, from: owner });
+
+        const tree = new FixedMerkleTree(16, [depositTxHash]);
+        const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(depositTxHash)));
     });
 
     describe("finalizeExits", () => {
