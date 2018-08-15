@@ -142,9 +142,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
     describe("startExit", () => {
         let expectedOwner, tokenAddr, expectedAmount;
-        beforeEach(async () => {
-
-        });
 
         it("cannot exit twice off of the same utxo", async () => {
             const tx1 = new Transaction([
@@ -165,7 +162,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 Buffer.from([]) // amount2           
             ]);
 
-            const txBytes1 = utils.bufferToHex(tx1.serializeTx());
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
 
             const depositBlknum = await rootChain.getDepositBlock();
@@ -204,6 +200,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         it("can exit single input", async () => {
             await rootChain.deposit({ value: depositAmount, from: owner });
             const depositBlknum = await rootChain.getDepositBlock();
+
             const tx2 = new Transaction([
                 (new BN(Number(depositBlknum))).toArrayLike(Buffer, 'be', 32), // blkbum1
                 Buffer.from([]), // txindex1
@@ -234,19 +231,13 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
-            // const confirmationSig1 = confirmTx(
-            //     tx2,
-            //     (await rootChain.getChildChain(childBlknum)[0]),
-            //     owenerKey
-            // );
-
             const priority2 = childBlknum * 1000000000 + 10000 * 0 + 0;
-
+            const [root, _] = await rootChain.getChildChain(childBlknum);
             const sigs = utils.bufferToHex(
                 Buffer.concat([
                     tx2.sig1,
                     tx2.sig2,
-                    tx2.confirmSig((await rootChain.getChildChain(childBlknum)[0]), owenerKey)
+                    tx2.confirmSig(utils.toBuffer(root), owenerKey)
                 ])
             );
 
@@ -259,7 +250,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             expectedAmount.should.be.bignumber.equal(depositAmount);
         });
 
-        it("can exit double input", async () => {
+        it("can exit double input (and submit block twice)", async () => {
             await rootChain.deposit({ value: depositAmount, from: owner });
             const depositBlknum = await rootChain.getDepositBlock();
             const childBlknum = await rootChain.getCurrentChildBlock();
@@ -323,26 +314,15 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
-            // const confirmationSig1 = confirmTx(
-            //     tx3,
-            //     (await rootChain.getChildChain(childBlknum2)[0]),
-            //     owenerKey
-            // );
-
-            // const confirmationSig2 = confirmTx(
-            //     tx3,
-            //     (await rootChain.getChildChain(childBlknum2)[0]),
-            //     owenerKey
-            // );
-
             const priority3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
-            // const sigs = tx2.sig1 + tx2.sig2 + confirmationSig1 + confirmationSig2;
 
+            const [root, _] = await rootChain.getChildChain(childBlknum2);
             const sigs = utils.bufferToHex(
                 Buffer.concat([
                     tx2.sig1,
                     tx2.sig2,
-                    tx2.confirmSig((await rootChain.getChildChain(childBlknum2)[0]), owenerKey)
+                    tx2.confirmSig(utils.toBuffer(root), owenerKey),
+                    tx2.confirmSig(utils.toBuffer(root), owenerKey)
                 ])
             );
             const utxoPos3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
