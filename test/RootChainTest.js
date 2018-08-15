@@ -231,8 +231,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
-            const priority2 = childBlknum * 1000000000 + 10000 * 0 + 0;
-            const [root, _] = await rootChain.getChildChain(childBlknum);
+            const priority2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
+            const [root, _] = await rootChain.getChildChain(Number(childBlknum));
             const sigs = utils.bufferToHex(
                 Buffer.concat([
                     tx2.sig1,
@@ -241,7 +241,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 ])
             );
 
-            const utxoPos2 = childBlknum * 1000000000 + 10000 * 0 + 0;
+            const utxoPos2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
             await rootChain.startExit(utxoPos2, txBytes2, proof, sigs);
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(priority2);
@@ -314,9 +314,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
-            const priority3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
+            const priority3 = Number(childBlknum2) * 1000000000 + 10000 * 0 + 0;
 
-            const [root, _] = await rootChain.getChildChain(childBlknum2);
+            const [root, _] = await rootChain.getChildChain(Number(childBlknum2));
             const sigs = utils.bufferToHex(
                 Buffer.concat([
                     tx2.sig1,
@@ -325,7 +325,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                     tx2.confirmSig(utils.toBuffer(root), owenerKey)
                 ])
             );
-            const utxoPos3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
+            const utxoPos3 = Number(childBlknum2) * 1000000000 + 10000 * 0 + 0;
 
             await rootChain.startExit(utxoPos3, txBytes3, proof, sigs);
 
@@ -400,7 +400,15 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         tree = new FixedMerkleTree(16, [merkleHash]);
         proof = proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
+        const childBlknum = await rootChain.getCurrentChildBlock();
         await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
+        sigs = utils.bufferToHex(
+            Buffer.concat([
+                tx2.sig1,
+                tx2.sig2
+            ])
+        );
+        const utxoPos4 = 
     });
 
     describe("finalizeExits", () => {
