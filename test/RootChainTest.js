@@ -283,7 +283,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             ]);
 
             let merkleHash = tx2.merkleHash();
-            let merkle = new FixedMerkleTree(16, [merkleHash]);
+            let tree = new FixedMerkleTree(16, [merkleHash]);
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
@@ -316,27 +316,35 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             merkleHash = tx3.merkleHash();
             tree = new FixedMerkleTree(16, [merkleHash]);
-            const proof = utils.bufferToHex(Buffer.concat(tree.getplasmaProof(merkleHash)));
+            const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             const childBlknum2 = await rootChain.getCurrentChildBlock();
             childBlknum2.should.be.bignumber.equal(new BigNumber(2000));
 
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
-            const confirmationSig1 = confirmTx(
-                tx3,
-                (await rootChain.getChildChain(childBlknum2)[0]),
-                owenerKey
-            );
+            // const confirmationSig1 = confirmTx(
+            //     tx3,
+            //     (await rootChain.getChildChain(childBlknum2)[0]),
+            //     owenerKey
+            // );
 
-            const confirmationSig2 = confirmTx(
-                tx3,
-                (await rootChain.getChildChain(childBlknum2)[0]),
-                owenerKey
-            );
+            // const confirmationSig2 = confirmTx(
+            //     tx3,
+            //     (await rootChain.getChildChain(childBlknum2)[0]),
+            //     owenerKey
+            // );
 
             const priority3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
-            const sigs = tx2.sig1 + tx2.sig2 + confirmationSig1 + confirmationSig2;
+            // const sigs = tx2.sig1 + tx2.sig2 + confirmationSig1 + confirmationSig2;
+
+            const sigs = utils.bufferToHex(
+                Buffer.concat([
+                    tx2.sig1,
+                    tx2.sig2,
+                    tx2.confirmSig((await rootChain.getChildChain(childBlknum2)[0]), owenerKey)
+                ])
+            );
             const utxoPos3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
 
             await rootChain.startExit(utxoPos3, txBytes3, proof, sigs);
