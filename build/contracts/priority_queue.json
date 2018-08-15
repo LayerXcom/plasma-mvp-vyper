@@ -13,7 +13,7 @@
       "constant": false,
       "payable": false,
       "type": "function",
-      "gas": 35288
+      "gas": 35879
     },
     {
       "name": "minChild",
