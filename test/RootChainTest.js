@@ -337,78 +337,101 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     });
 
     describe("challengeExit", () => {
-        const tx1 = new Transaction([
-            Buffer.from([]), // blkbum1
-            Buffer.from([]), // txindex1
-            Buffer.from([]), // oindex1
+        it("can challenge exit", async () => {
+            const tx1 = new Transaction([
+                Buffer.from([]), // blkbum1
+                Buffer.from([]), // txindex1
+                Buffer.from([]), // oindex1
 
-            Buffer.from([]), // blknum2
-            Buffer.from([]), // txindex2
-            Buffer.from([]), // oindex2
+                Buffer.from([]), // blknum2
+                Buffer.from([]), // txindex2
+                Buffer.from([]), // oindex2
 
-            utils.zeros(20), // token address
+                utils.zeros(20), // token address
 
-            utils.toBuffer(owner), // newowner1
-            depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+                utils.toBuffer(owner), // newowner1
+                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
 
-            utils.zeros(20), // newowner2
-            Buffer.from([]) // amount2           
-        ]);
-        const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
-        const depositBlknum = await rootChain.getDepositBlock();
+                utils.zeros(20), // newowner2
+                Buffer.from([]) // amount2           
+            ]);
+            const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
+            const depositBlknum = await rootChain.getDepositBlock();
 
-        const utxoPos1 = Number(depositBlknum) * 1000000000 + 1;
-        await rootChain.deposit({ value: depositAmount, from: owner });
-        const utxoPos2 = Number(depositBlknum) * 1000000000;
-        await rootChain.deposit({ value: depositAmount, from: owner });
+            const utxoPos1 = Number(depositBlknum) * 1000000000 + 1;
+            await rootChain.deposit({ value: depositAmount, from: owner });
+            const utxoPos2 = Number(depositBlknum) * 1000000000;
+            await rootChain.deposit({ value: depositAmount, from: owner });
 
-        let tree = new FixedMerkleTree(16, [depositTxHash]);
-        let proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(depositTxHash)));
+            let tree = new FixedMerkleTree(16, [depositTxHash]);
+            let proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(depositTxHash)));
 
-        let [root, _] = await rootChain.getChildChain(Number(utxoPos1));
-        let sigs = utils.bufferToHex(
-            Buffer.concat([
-                tx1.sig1,
-                tx1.sig2,
-                tx1.confirmSig(utils.toBuffer(root), owenerKey)
-            ])
-        );
+            let [root, _] = await rootChain.getChildChain(Number(utxoPos1));
+            let sigs = utils.bufferToHex(
+                Buffer.concat([
+                    tx1.sig1,
+                    tx1.sig2,
+                    tx1.confirmSig(utils.toBuffer(root), owenerKey)
+                ])
+            );
 
-        await rootChain.startDepositExit(utxoPos1, ZERO_ADDRESS, Number(tx1.amount1));
+            await rootChain.startDepositExit(utxoPos1, ZERO_ADDRESS, Number(tx1.amount1));
 
-        const tx2 = new Transaction([
-            (new BN(utxoPos2)).toArrayLike(Buffer, 'be', 32), // blkbum1
-            Buffer.from([]), // txindex1
-            Buffer.from([]), // oindex1
+            const tx3 = new Transaction([
+                (new BN(utxoPos2)).toArrayLike(Buffer, 'be', 32), // blkbum1
+                Buffer.from([]), // txindex1
+                Buffer.from([]), // oindex1
 
-            Buffer.from([]), // blknum2
-            Buffer.from([]), // txindex2
-            Buffer.from([]), // oindex2
+                Buffer.from([]), // blknum2
+                Buffer.from([]), // txindex2
+                Buffer.from([]), // oindex2
 
-            utils.zeros(20), // token address
+                utils.zeros(20), // token address
 
-            utils.toBuffer(owner), // newowner1
-            depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+                utils.toBuffer(owner), // newowner1
+                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
 
-            utils.zeros(20), // newowner2
-            Buffer.from([]) // amount2           
-        ]);
+                utils.zeros(20), // newowner2
+                Buffer.from([]) // amount2           
+            ]);
+            const txBytes3 = utils.bufferToHex(tx3.serializeTx());
+            tx3.sign1(owenerKey);
 
-        tx2.sign1(owenerKey);
+            merkleHash = tx3.merkleHash();
+            tree = new FixedMerkleTree(16, [merkleHash]);
+            proof = proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
-        merkleHash = tx2.merkleHash();
-        tree = new FixedMerkleTree(16, [merkleHash]);
-        proof = proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
+            const childBlknum = await rootChain.getCurrentChildBlock();
+            await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
+            sigs = utils.bufferToHex(
+                Buffer.concat([
+                    tx3.sig1,
+                    tx3.sig2
+                ])
+            );
+            const utxoPos2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
 
-        const childBlknum = await rootChain.getCurrentChildBlock();
-        await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
-        sigs = utils.bufferToHex(
-            Buffer.concat([
-                tx2.sig1,
-                tx2.sig2
-            ])
-        );
-        const utxoPos4 = 
+            const tx4 = new Transaction([
+                (new BN(Number(utxoPos1))).toArrayLike(Buffer, 'be', 32), // blkbum1
+                Buffer.from([]), // txindex1
+                Buffer.from([]), // oindex1
+
+                Buffer.from([]), // blknum2
+                Buffer.from([]), // txindex2
+                Buffer.from([]), // oindex2
+
+                utils.zeros(20), // token address
+
+                utils.toBuffer(owner), // newowner1
+                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+
+                utils.zeros(20), // newowner2
+                Buffer.from([]) // amount2           
+            ]);
+
+            const txBytes4 = utils.bufferToHex(tx4.serializeTx());
+            tx4.sign1(owenerKey);
+        });
     });
 
     describe("finalizeExits", () => {
