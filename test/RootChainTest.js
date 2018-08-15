@@ -232,7 +232,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const childBlknum = await rootChain.getCurrentChildBlock();
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
 
-            await rootChain.submitBlock(tree.getRoot());
+            await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
             const confirmationSig1 = confirmTx(
                 tx2,
@@ -278,7 +278,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             let merkleHash = tx2.merkleHash();
             let merkle = new FixedMerkleTree(16, [merkleHash]);
             childBlknum.should.be.bignumber.equal(new BigNumber(1000));
-            await rootChain.submitBlock(merkle.getRoot());
+            await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
             const depositBlknum2 = await rootChain.getDepositBlock();
             depositBlknum2.should.be.bignumber.equal(new BigNumber(1001));
@@ -314,7 +314,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const childBlknum2 = await rootChain.getCurrentChildBlock();
             childBlknum2.should.be.bignumber.equal(new BigNumber(2000));
 
-            await rootChain.submitBlock(merkle.getRoot());
+            await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
             const confirmationSig1 = confirmTx(
                 tx3,
