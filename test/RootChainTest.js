@@ -148,13 +148,13 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
         it("cannot exit twice off of the same utxo", async () => {
             const tx1 = new Transaction([
-                new Buffer([]), // blkbum1
-                new Buffer([]), // txindex1
-                new Buffer([]), // oindex1
+                Buffer.from([]), // blkbum1
+                Buffer.from([]), // txindex1
+                Buffer.from([]), // oindex1
 
-                new Buffer([]), // blknum2
-                new Buffer([]), // txindex2
-                new Buffer([]), // oindex2
+                Buffer.from([]), // blknum2
+                Buffer.from([]), // txindex2
+                Buffer.from([]), // oindex2
 
                 utils.zeros(20), // token address
 
@@ -162,7 +162,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
 
                 utils.zeros(20), // newowner2
-                new Buffer([]) // amount2           
+                Buffer.from([]) // amount2           
             ]);
 
             const txBytes1 = utils.bufferToHex(tx1.serializeTx());
@@ -177,12 +177,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const tree = new FixedMerkleTree(16, [merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
             // const confirmationSig1 = confirmTx(tx1, (await rootChain.getChildChain(depositBlknum)[0]), owenerKey);
-
+            const [root, _] = await rootChain.getChildChain(Number(depositBlknum));
             const sigs = utils.bufferToHex(
                 Buffer.concat([
                     tx1.sig1,
                     tx1.sig2,
-                    tx1.confirmSig((await rootChain.getChildChain(depositBlknum)[0]), owenerKey)
+                    tx1.confirmSig(utils.toBuffer(root), owenerKey)
                 ])
             );
 

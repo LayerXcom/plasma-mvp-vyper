@@ -8,27 +8,27 @@ const BlankAddress = utils.bufferToHex(utils.zeros(20))
 const getFields = () => [
     {
         name: 'blknum1',
-        default: new Buffer([])
+        default: Buffer.from([])
     },
     {
         name: 'txindex1',
-        default: new Buffer([])
+        default: Buffer.from([])
     },
     {
         name: 'oindex1',
-        default: new Buffer([])
+        default: Buffer.from([])
     },
     {
         name: 'blknum2',
-        default: new Buffer([])
+        default: Buffer.from([])
     },
     {
         name: 'txindex2',
-        default: new Buffer([])
+        default: Buffer.from([])
     },
     {
         name: 'oindex2',
-        default: new Buffer([])
+        default: Buffer.from([])
     },
     {
         name: 'tokenAddress',
@@ -41,7 +41,7 @@ const getFields = () => [
     },
     {
         name: 'amount1',
-        default: new Buffer([])
+        default: Buffer.from([])
     },
     {
         name: 'newowner2',
@@ -50,7 +50,7 @@ const getFields = () => [
     },
     {
         name: 'amount2',
-        default: new Buffer([])
+        default: Buffer.from([])
     },
     {
         name: 'sig1',
