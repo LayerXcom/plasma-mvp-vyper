@@ -373,6 +373,26 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 tx1.confirmSig(utils.toBuffer(root), owenerKey)
             ])
         );
+
+        await rootChain.startDepositExit(utxoPos1, ZERO_ADDRESS, Number(tx1.amount1));
+
+        const tx2 = new Transaction([
+            (new BN(utxoPos2)).toArrayLike(Buffer, 'be', 32), // blkbum1
+            Buffer.from([]), // txindex1
+            Buffer.from([]), // oindex1
+
+            Buffer.from([]), // blknum2
+            Buffer.from([]), // txindex2
+            Buffer.from([]), // oindex2
+
+            utils.zeros(20), // token address
+
+            utils.toBuffer(owner), // newowner1
+            depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+
+            utils.zeros(20), // newowner2
+            Buffer.from([]) // amount2           
+        ]);
     });
 
     describe("finalizeExits", () => {
