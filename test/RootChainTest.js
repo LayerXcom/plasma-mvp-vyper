@@ -341,7 +341,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     });
 
     describe("finalizeExits", () => {
-        it("", async () => {
+        it("can start exits and finalize exits", async () => {
             const tx1 = new Transaction([
                 Buffer.from([]), // blkbum1
                 Buffer.from([]), // txindex1
