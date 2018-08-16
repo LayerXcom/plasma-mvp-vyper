@@ -375,6 +375,13 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const preBalance = web3.eth.getBalance(owner);
             await rootChain.finalizeExits(ZERO_ADDRESS);
             const postBalance = web3.eth.getBalance(owner);
+
+            postBalance.should.be.bignumber.equal(preBalance.plus(depositAmount));
+
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(utxoPos1);
+            expectedOwner.should.equal(ZERO_ADDRESS);
+            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            expectedAmount.should.be.bignumber.equal(depositAmount);
         });
     });
 });
