@@ -437,6 +437,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             childBlknum = await rootChain.getCurrentChildBlock();
+            await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
+
+            sigs = tx4.sig1 + tx4.sig2;
+            const utxoPos4 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
+            const oindex1 = 0;
+
 
         });
     });
