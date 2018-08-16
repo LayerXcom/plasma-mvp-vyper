@@ -365,7 +365,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const utxoPos1 = Number(depositBlknum1) * 1000000000 + 10000 * 0 + 1;
 
             await rootChain.startDepositExit(utxoPos1, ZERO_ADDRESS, Number(tx1.amount1));
+            await increaseTime(duration.weeks(4));
 
+            let [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(utxoPos1);
+            expectedOwner.should.equal(owner);
+            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            expectedAmount.should.be.bignumber.equal(depositAmount);
         });
     });
 });
