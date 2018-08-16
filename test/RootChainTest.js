@@ -439,14 +439,21 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             childBlknum = await rootChain.getCurrentChildBlock();
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
+            [root, _] = await rootChain.getChildChain(Number(childBlknum));
+            const confirmationSig = tx4.confirmSig(utils.toBuffer(root), owenerKey)
             sigs = tx4.sig1 + tx4.sig2;
+
             const utxoPos4 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
             const oindex1 = 0;
+
             [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(utxoPos1);
             expectedOwner.should.equal(owner);
             tokenAddr.shoudl.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
 
+            it("should fails if transaction after exit doesn't reference the utxo being exited", async () => {
+                await expectThrow(rootChain.challengeExit(utxoPos3, utxoPos1, txBytes3, proof, sigs, confirmationSig), EVMRevert);
+            });
         });
     });
 
