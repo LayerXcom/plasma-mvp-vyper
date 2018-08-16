@@ -106,25 +106,6 @@ class FixedMerkleTree {
 
         return proof
     }
-
-    verify(proof, targetNode, root) {
-        let hash = targetNode
-
-        if (!Array.isArray(proof) || !proof.length || !targetNode || !root) {
-            return false
-        }
-
-        for (let i = 0; i < proof.length; i++) {
-            const node = proof[i]
-            const isLeftNode = node.position === 'left'
-            const buffers = []
-            buffers.push(hash)
-            buffers[isLeftNode ? 'unshift' : 'push'](node.data)
-            hash = sha3(Buffer.concat(buffers))
-        }
-
-        return Buffer.compare(hash, root) === 0
-    }
 }
 
 module.exports = FixedMerkleTree;

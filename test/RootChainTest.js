@@ -355,6 +355,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.zeros(20), // newowner2
                 Buffer.from([]) // amount2           
             ]);
+
             const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
             let depositBlknum = await rootChain.getDepositBlock();
 
@@ -401,7 +402,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             merkleHash = tx3.merkleHash();
             tree = new FixedMerkleTree(16, [merkleHash]);
-            proof = proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
+            proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             let childBlknum = await rootChain.getCurrentChildBlock();
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
@@ -442,7 +443,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
             [root, _] = await rootChain.getChildChain(Number(childBlknum));
-            const confirmationSig = tx4.confirmSig(utils.toBuffer(root), owenerKey)
+            let confirmationSig = tx4.confirmSig(utils.toBuffer(root), owenerKey)
             sigs = tx4.sig1 + tx4.sig2;
 
             const utxoPos4 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
@@ -455,15 +456,25 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             await rootChain.challengeExit(utxoPos4, oindex1, txBytes4, proof, sigs, confirmationSig);
 
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(utxoPos1);
+            expectedOwner.should.equal(ZERO_ADDRESS);
+            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            expectedAmount.should.be.bignumber.equal(depositAmount);
         });
 
-        it("should fails if transaction after exit doesn't reference the utxo being exited", async () => {
-            await expectThrow(rootChain.challengeExit(utxoPos3, utxoPos1, txBytes3, proof, sigs, confirmationSig), EVMRevert);
-        });
+        // it("should fails if transaction after exit doesn't reference the utxo being exited", async () => {
+        //     await expectThrow(rootChain.challengeExit(utxoPos3, oindex1, txBytes3, proof, sigs, confirmationSig), EVMRevert);
+        // });
 
-        it("should fails if transaction proof is incorrect", async () => {
-            await expectThrow(rootChain.challengeExit(utxoPos4, utxoPos1, txBytes4, proof, sigs, confirmationSig), EVMRevert);
-        });
+        // it("should fails if transaction proof is incorrect", async () => {
+        //     proof =
+        //         await expectThrow(rootChain.challengeExit(utxoPos4, oindex1, txBytes4, proof, sigs, confirmationSig), EVMRevert);
+        // });
+
+        // it("should fails if transaction confirmation is incorrect", async () => {
+        //     confirmationSig =
+        //         await expectThrow(rootChain.challengeExit(utxoPos4, oindex1, txBytes4, proof, sigs, confirmationSig), EVMRevert);
+        // });
     });
 
     describe("finalizeExits", () => {
