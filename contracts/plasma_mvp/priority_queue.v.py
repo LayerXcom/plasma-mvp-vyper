@@ -42,7 +42,7 @@ def percDown(_i: uint256):
     newVal: uint256 = self.heapList[_i]
     mc: uint256 = self.minChild(_i)
     for _ in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        if not mc <= self.currentSize and newVal > self.heapList[mc]:
+        if not (mc <= self.currentSize and newVal > self.heapList[mc]):
             break
         self.heapList[i] = self.heapList[mc]
         i = mc
