@@ -1384,14 +1384,10 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0xa93e8ffa22bf46284239a2dd7e092a309fb0adbf",
-      "transactionHash": "0xdc0b25232b7ecc2acc763178d657a969f7084a738d3d80a6c3a1e73ac621d944"
+      "address": "0xb6ea6c91b98a81e5715d40a6fc95747b89d94d0b",
+      "transactionHash": "0xf60b0248ad9e1225aeac3e619309dc1486ae8c12531c8ac3b9e9340ea552e9b1"
     }
   },
   "schemaVersion": "2.0.1",
-<<<<<<< HEAD
-  "updatedAt": "2018-08-17T08:01:01.530Z"
-=======
-  "updatedAt": "2018-08-17T04:38:32.826Z"
->>>>>>> develop
+  "updatedAt": "2018-08-17T10:38:45.927Z"
 }
