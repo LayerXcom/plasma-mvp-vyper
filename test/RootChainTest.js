@@ -260,7 +260,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority2);
             expectedOwner.should.equal(owner);
-            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
         });
 
