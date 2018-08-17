@@ -13,17 +13,16 @@ def setup() -> bool:
 
 @private
 def percUp(_i: uint256):
-    j: uint256 = _i
-    newVal: uint256 = self.heapList[_i]
     i: uint256 = _i
+    newVal: uint256 = self.heapList[_i]
     for _ in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        k: uint256 = convert(floor(convert(i, "decimal") / 2.0), "uint256")
-        if not newVal < self.heapList[k]:
+        parent: uint256 = convert(floor(convert(i, "decimal") / 2.0), "uint256")
+        if not newVal < self.heapList[parent]:
             break
-        self.heapList[i] = self.heapList[k]
-        i = k
+        self.heapList[i] = self.heapList[parent]
+        i = parent
 
-    if i != j:
+    if i != _i:
         self.heapList[i] = newVal
 
 @public
