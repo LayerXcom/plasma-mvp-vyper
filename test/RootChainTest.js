@@ -5,7 +5,7 @@ const { EVMRevert } = require('./helpers/EVMRevert');
 const { expectThrow } = require('./helpers/expectThrow');
 const FixedMerkleTree = require('./helpers/fixedMerkleTree');
 const Transaction = require('./helpers/transaction');
-const { keys } = require('./helpers/keys');
+const { keys, liveKeys } = require('./helpers/keys');
 
 const RootChain = artifacts.require("root_chain");
 const PriorityQueue = artifacts.require("priority_queue");
@@ -31,6 +31,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
     const owenerKey = keys[0];
     const nonOwnerKey = keys[1];
+    const liveOwnerKey = liveKeys[0];
     const ZERO_ADDRESS = utils.bufferToHex(utils.zeros(20));
 
     beforeEach(async () => {
@@ -163,12 +164,11 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             ]);
             const txBytes1 = utils.bufferToHex(tx1.serializeTx());
 
-            // const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
-            const depositTxHash = utils.sha3(Buffer.concat([
-                utils.toBuffer(owner),
-                utils.zeros(20),
-                depositAmountBN.toArrayLike(Buffer, 'be', 32)
-            ]));
+            // const depositTxHash = utils.sha3(Buffer.concat([
+            //     utils.toBuffer(owner),
+            //     utils.zeros(20),
+            //     depositAmountBN.toArrayLike(Buffer, 'be', 32)
+            // ]));
 
             const depositBlknum = await rootChain.getDepositBlock();
             depositBlknum.should.be.bignumber.equal(num1);
@@ -195,9 +195,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await increaseTime(duration.weeks(1.5));
 
             const utxoPos1 = Number(depositBlknum) * 1000000000 + 10000 * 0 + 1;
-            // await rootChain.startExit(utxoPos1, depositTxHash, proof, sigs);
+
             await expectThrow(rootChain.startExit(utxoPos1, txBytes1, proof, sigs), EVMRevert);
-            // await expectThrow(rootChain.startExit(utxoPos1, utils.sha3(owner), utils.sha3(owner), utils.sha3(owner)), EVMRevert);
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority1);
             expectedOwner.should.equal(owner);
@@ -210,7 +209,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const depositBlknum = await rootChain.getDepositBlock();
 
             const tx2 = new Transaction([
-                (new BN(Number(depositBlknum))).toArrayLike(Buffer, 'be', 32), // blkbum1
+                utils.toBuffer(Number(depositBlknum)), // blkbum1
                 Buffer.from([]), // txindex1
                 Buffer.from([]), // oindex1
 
@@ -221,13 +220,14 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.zeros(20), // token address
 
                 utils.toBuffer(owner), // newowner1
-                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+                utils.toBuffer(depositAmountNum), // amount1
 
                 utils.zeros(20), // newowner2
                 Buffer.from([]) // amount2           
             ]);
 
             const txBytes2 = utils.bufferToHex(tx2.serializeTx());
+            // const txBytes2 = utils.bufferToHex(rlp.encode([Number(depositBlknum), 0, 0, 0, 0, 0, 0, owner, depositAmountNum, 0, 0, 0, 0]));
             tx2.sign1(owenerKey);
 
             const merkleHash = tx2.merkleHash();
@@ -239,8 +239,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
-            const priority2 = childBlknum * 1000000000 + 10000 * 0 + 0;
-            const [root, _] = await rootChain.getChildChain(childBlknum);
+            const priority2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
+            const [root, _] = await rootChain.getChildChain(Number(childBlknum));
             const sigs = utils.bufferToHex(
                 Buffer.concat([
                     tx2.sig1,
@@ -249,7 +249,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 ])
             );
 
-            const utxoPos2 = childBlknum * 1000000000 + 10000 * 0 + 0;
+            const utxoPos2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
             await rootChain.startExit(utxoPos2, txBytes2, proof, sigs);
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority2);
@@ -372,7 +372,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.deposit({ value: depositAmount, from: owner });
             const utxoPos1 = Number(depositBlknum1) * 1000000000 + 10000 * 0;
 
-            await rootChain.startDepositExit(utxoPos1, ZERO_ADDRESS, Number(depositAmount), { from: owner }); // TODO            
+            await rootChain.startDepositExit(utxoPos1, ZERO_ADDRESS, Number(depositAmount), { from: owner });
             await increaseTime(duration.weeks(4));
 
             let [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
@@ -381,15 +381,15 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             expectedAmount.should.be.bignumber.equal(depositAmount);
 
             const preBalance = web3.eth.getBalance(owner);
-            // await rootChain.finalizeExits(ZERO_ADDRESS);
-            // const postBalance = web3.eth.getBalance(owner);
+            await rootChain.finalizeExits(ZERO_ADDRESS);
+            const postBalance = web3.eth.getBalance(owner);
 
-            // postBalance.should.be.bignumber.equal(preBalance.plus(depositAmount));
+            postBalance.should.be.bignumber.equal(preBalance.plus(depositAmount));
 
-            // [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
-            // expectedOwner.should.equal(ZERO_ADDRESS);
-            // tokenAddr.shoudl.equal(ZERO_ADDRESS);
-            // expectedAmount.should.be.bignumber.equal(depositAmount);
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
+            expectedOwner.should.equal(ZERO_ADDRESS);
+            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            expectedAmount.should.be.bignumber.equal(depositAmount);
         });
     });
 });
