@@ -54,7 +54,6 @@ def percDown(_i: uint256):
 @public
 def insert(_k: uint256) -> bool:
     assert msg.sender == self.owner
-    # NOTE: heapList[0] is not used
     self.currentSize += 1
     self.heapList[self.currentSize] = _k
     self.percUp(self.currentSize)
