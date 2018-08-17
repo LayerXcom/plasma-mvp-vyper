@@ -161,6 +161,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.zeros(20), // newowner2
                 Buffer.from([]) // amount2           
             ]);
+            const txBytes1 = utils.bufferToHex(tx1.serializeTx());
 
             // const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
             const depositTxHash = utils.sha3(Buffer.concat([
@@ -183,7 +184,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 Buffer.concat([
                     tx1.sig1,
                     tx1.sig2,
-                    tx1.confirmSig(utils.toBuffer(root), owenerKey)
+                    tx1.confirmSig(utils.toBuffer(root), owenerKey),
                 ])
             );
 
@@ -195,12 +196,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const utxoPos1 = Number(depositBlknum) * 1000000000 + 10000 * 0 + 1;
             // await rootChain.startExit(utxoPos1, depositTxHash, proof, sigs);
-            await expectThrow(rootChain.startExit(utxoPos1, depositTxHash, proof, sigs), EVMRevert);
+            await expectThrow(rootChain.startExit(utxoPos1, txBytes1, proof, sigs), EVMRevert);
             // await expectThrow(rootChain.startExit(utxoPos1, utils.sha3(owner), utils.sha3(owner), utils.sha3(owner)), EVMRevert);
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority1);
             expectedOwner.should.equal(owner);
-            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
         });
 
