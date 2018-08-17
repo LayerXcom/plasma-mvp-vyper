@@ -53,15 +53,6 @@ let zeroHashes = ['0000000000000000000000000000000000000000000000000000000000000
     '5c67add7c6caf302256adedf7ab114da0acfe870d449a3a489f781d659e8becc',
     'da7bce9f4e8618b6bd2f4132ce798cdc7a60e7e1460a7299e3c6342a579626d2'];
 
-// var utilities = {
-//     catchError: catchError,
-//     toHex: toHex,
-//     waitForNBlocks: waitForNBlocks,
-//     fastForward: fastForward,
-//     proofForDepositBlock: proofForDepositBlock,
-//     zeroHashes: zeroHashes
-// };
-
 module.exports = {
     catchError: catchError,
     toHex: toHex,
