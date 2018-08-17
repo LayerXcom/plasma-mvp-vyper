@@ -9,7 +9,7 @@ let {
     fastForward,
     proofForDepositBlock,
     zeroHashes
-} = require('./helpers/priorityQueueUtilities.js');
+} = require('./helpers/priorityQueueUtilities');
 
 contract('PriorityQueue', async (accounts) => {
     let instance;
