@@ -65,8 +65,8 @@ def ecrecoverSig(_txHash: bytes32, _sig: bytes[65]) -> address:
     # ref. https://gist.github.com/axic/5b33912c6f61ae6fd96d6c4a47afde6d
     # The signature format is a compact form of:
     # {bytes32 r}{bytes32 s}{uint8 v}
-    r: uint256 = convert(extract32(_sig, 0, type=bytes32), "uint256")
-    s: uint256 = convert(extract32(_sig, 32, type=bytes32), "uint256")
+    r: uint256 = extract32(_sig, 0, type=uint256)
+    s: uint256 = extract32(_sig, 32, type=uint256)
     v: int128 = convert(slice(_sig, start=64, len=1), "int128")
     # Version of signature should be 27 or 28, but 0 and 1 are also possible versions.
     if not v in [1, 2, 27, 28]:
@@ -144,6 +144,12 @@ def getExit(_utxoPos: uint256) -> (address, address, uint256):
 @constant
 def getCurrentFeeExit() -> uint256:
     return self.currentFeeExit
+
+# @dev Returns currentChildBlock
+@public
+@constant
+def getCurrentChildBlock() -> uint256:
+    return self.currentChildBlock
 
 # @dev Determines the next exit to be processed.
 @public
