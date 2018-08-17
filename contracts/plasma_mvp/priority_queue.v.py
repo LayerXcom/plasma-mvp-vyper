@@ -72,10 +72,8 @@ def delMin() -> uint256:
     retVal: uint256 = self.heapList[1]
     self.heapList[1] = self.heapList[self.currentSize]
     self.heapList[self.currentSize] = 0
-
     self.currentSize -= 1
     self.percDown(1)
-    
     return retVal
 
 @public
