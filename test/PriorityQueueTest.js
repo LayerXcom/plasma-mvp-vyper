@@ -1,7 +1,7 @@
 let assert = require('chai').assert;
 
-let RootChain = artifacts.require("root_chain.vyper");
-let PriorityQueue = artifacts.require("priority_queue.vyper");
+let RootChain = artifacts.require("root_chain");
+let PriorityQueue = artifacts.require("priority_queue");
 
 let {
     catchError,
