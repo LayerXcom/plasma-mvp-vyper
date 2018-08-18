@@ -328,9 +328,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
-            const priority3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
+            const priority3 = Number(childBlknum2) * 1000000000 + 10000 * 0 + 0;
 
-            const [root, _] = await rootChain.getChildChain(childBlknum2);
+            const [root, _] = await rootChain.getChildChain(Number(childBlknum2));
             const sigs = utils.bufferToHex(
                 Buffer.concat([
                     tx2.sig1,
@@ -339,7 +339,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                     tx2.confirmSig(utils.toBuffer(root), owenerKey)
                 ])
             );
-            const utxoPos3 = childBlknum2 * 1000000000 + 10000 * 0 + 0;
+            const utxoPos3 = Number(childBlknum2) * 1000000000 + 10000 * 0 + 0;
 
             await rootChain.startExit(utxoPos3, txBytes3, proof, sigs);
 
