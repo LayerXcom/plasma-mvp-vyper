@@ -13,17 +13,16 @@ def setup() -> bool:
 
 @private
 def percUp(_i: uint256):
-    j: uint256 = _i
-    newVal: uint256 = self.heapList[_i]
     i: uint256 = _i
+    newVal: uint256 = self.heapList[_i]
     for _ in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        k: uint256 = convert(floor(convert(i, "decimal") / 2.0), "uint256")
-        if not newVal < self.heapList[k]:
+        parent: uint256 = convert(floor(convert(i, "decimal") / 2.0), "uint256")
+        if not newVal < self.heapList[parent]:
             break
-        self.heapList[i] = self.heapList[k]
-        i = k
+        self.heapList[i] = self.heapList[parent]
+        i = parent
 
-    if i != j:
+    if i != _i:
         self.heapList[i] = newVal
 
 @public
@@ -39,24 +38,22 @@ def minChild(_i: uint256) -> uint256:
 
 @private
 def percDown(_i: uint256):
-    j: uint256 = _i
-    newVal: uint256 = self.heapList[_i]
     i: uint256 = _i
+    newVal: uint256 = self.heapList[_i]
     mc: uint256 = self.minChild(_i)
     for _ in range(10000): # TODO: Right way? In addition, range() does not accept variable?
-        if not mc <= self.currentSize and newVal > self.heapList[mc]:
+        if not (mc <= self.currentSize and newVal > self.heapList[mc]):
             break
         self.heapList[i] = self.heapList[mc]
         i = mc
         mc = self.minChild(i)
 
-    if i != j:
+    if i != _i:
         self.heapList[i] = newVal
 
 @public
 def insert(_k: uint256) -> bool:
     assert msg.sender == self.owner
-    # NOTE: heapList[0] is not used
     self.currentSize += 1
     self.heapList[self.currentSize] = _k
     self.percUp(self.currentSize)
@@ -74,10 +71,8 @@ def delMin() -> uint256:
     retVal: uint256 = self.heapList[1]
     self.heapList[1] = self.heapList[self.currentSize]
     self.heapList[self.currentSize] = 0
-
     self.currentSize -= 1
     self.percDown(1)
-    
     return retVal
 
 @public
