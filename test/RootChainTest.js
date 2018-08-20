@@ -7,6 +7,7 @@ const FixedMerkleTree = require('./helpers/fixedMerkleTree');
 const Transaction = require('./helpers/transaction');
 const { keys, liveKeys } = require('./helpers/keys');
 const { advanceBlock } = require('./helpers/advanceToBlock');
+const { getTransactionGasCost } = require('./helpers/getGasCost');
 
 const RootChain = artifacts.require("root_chain");
 const PriorityQueue = artifacts.require("priority_queue");
@@ -387,22 +388,23 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     describe("finalizeExits", () => {
         it("can start exits and finalize exits", async () => {
             const depositBlknum1 = await rootChain.getDepositBlock();
-            await rootChain.deposit({ value: depositAmount, from: nonOwner });
+            await rootChain.deposit({ value: depositAmount, from: owner });
             const utxoPos1 = Number(depositBlknum1) * 1000000000 + 10000 * 0;
 
-            await rootChain.startDepositExit(utxoPos1, ZERO_ADDRESS, Number(depositAmount), { from: nonOwner });
+            await rootChain.startDepositExit(utxoPos1, ZERO_ADDRESS, Number(depositAmount), { from: owner });
             await increaseTime(duration.weeks(4));
 
             let [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
-            expectedOwner.should.equal(nonOwner);
+            expectedOwner.should.equal(owner);
             tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
             
-            const preBalance = web3.eth.getBalance(nonOwner);
-            await rootChain.finalizeExits(ZERO_ADDRESS);
-            const postBalance = web3.eth.getBalance(nonOwner);
+            const preBalance = web3.eth.getBalance(owner);
+            const res = await rootChain.finalizeExits(ZERO_ADDRESS);
+            const gasCost = getTransactionGasCost(res["tx"]);
+            const postBalance = web3.eth.getBalance(owner);
 
-            postBalance.should.be.bignumber.equal(preBalance.plus(depositAmount)); 
+            postBalance.plus(gasCost).should.be.bignumber.equal(preBalance.plus(depositAmount)); 
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
             expectedOwner.should.equal(ZERO_ADDRESS);
