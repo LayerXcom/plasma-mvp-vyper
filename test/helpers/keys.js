@@ -11,6 +11,11 @@ const keys = [
     Buffer.from("8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5", "hex"),
 ];
 
+const liveKeys = [
+    Buffer.from("1efdf01f5d286417c6d8a8f555b3f824adac7cbc780dd42dbbacce8b0bcd1d15", "hex")
+];
+
 module.exports = {
-    keys
+    keys,
+    liveKeys
 };
