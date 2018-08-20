@@ -207,7 +207,7 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
         token: _token,
         amount: _amount
     }
-    log.ExitStarted(msg.sender, _utxoPos, _token, _amount)
+    log.ExitStarted(_exitor, _utxoPos, _token, _amount)
 
 
 #
