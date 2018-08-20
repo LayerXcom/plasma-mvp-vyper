@@ -375,7 +375,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority3);
             expectedOwner.should.equal(owner);
-            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
         });
     });
@@ -424,7 +424,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
             expectedOwner.should.equal(ZERO_ADDRESS);
-            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
         });
     });
