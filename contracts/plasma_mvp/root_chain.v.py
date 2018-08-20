@@ -35,22 +35,20 @@ currentFeeExit: uint256
 
 @private
 @constant
-def createExitingTx(_exitingTxBytes: bytes[1024], _oIndex: uint256) -> (address, address, uint256, uint256):
-    # NOTE: RLP decoder needs to be deployed
-    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
-    # TODO: Make sure that tx which has one output only decoded correctly.
-    txList = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
+def createExitingTx(_exitingTxBytes: bytes[1024], _oIndex: uint256) -> (address, address, uint256, uint256):    
+    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, token, newowner1, amount1, newowner2, amount2]    
+    txList = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256])
     if _oIndex == 0:
         return txList[7], txList[6], txList[8], txList[0] * txList[3] # exitor, token, amount, inputCount
     if _oIndex == 1:
         return txList[9], txList[6], txList[10], txList[0] * txList[3] # exitor, token, amount, inputCount
-
+    
 
 @private
 @constant
 def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
-    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
-    txList = RLPList(_challengingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
+    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2]
+    txList = RLPList(_challengingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256])
     if _oIndex == 0:
         return txList[0] + txList[1] + txList[2]
     if _oIndex == 1:
@@ -59,29 +57,32 @@ def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
 
 @private
 @constant
-def ecrecoverSig(_txHash: bytes32, _sig: bytes[1024]) -> address:
+def ecrecoverSig(_txHash: bytes32, _sig: bytes[65]) -> address:
+    if len(_sig) != 65:
+        return ZERO_ADDRESS
     # ref. https://gist.github.com/axic/5b33912c6f61ae6fd96d6c4a47afde6d
     # The signature format is a compact form of:
     # {bytes32 r}{bytes32 s}{uint8 v}
-    if len(_sig) == 65: # TODO: len(bytes[1024]) is always 1024?
-        return ZERO_ADDRESS
-    r: uint256 = convert(extract32(_sig, 0, type=bytes32), "uint256")
-    s: uint256 = convert(extract32(_sig, 32, type=bytes32), "uint256")
-    v: uint256 = convert(extract32(_sig, 64, type=int128), "uint256")
+    r: uint256 = extract32(_sig, 0, type=uint256)
+    s: uint256 = extract32(_sig, 32, type=uint256)
+    v: int128 = convert(slice(_sig, start=64, len=1), "int128")    
     # Version of signature should be 27 or 28, but 0 and 1 are also possible versions.
-    if not convert(v, "int128") in [1, 2, 27, 28]:
-        return ZERO_ADDRESS
-    else:
-        return ecrecover(_txHash, v, r, s)
+    # geth uses [0, 1] and some clients have followed. This might change, see:
+    # https://github.com/ethereum/go-ethereum/issues/2053
+    if v < 27:
+        v += 27
+    if v in [27, 28]:
+        return ecrecover(_txHash, convert(v, "uint256"), r, s)
+    return ZERO_ADDRESS
 
 
 @private
 @constant
-def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes[1024]) -> bool:
-    assert len(_sigs) % 65 == 0 and len(_sigs) <= 260
-    sig1: bytes[1024] = slice(_sigs, start=0, len=65)
-    sig2: bytes[1024] = slice(_sigs, start=65, len=65)
-    confSig1: bytes[1024] = slice(_sigs, start=130, len=65)
+def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: bytes[260]) -> bool:
+    assert len(_sigs) % 65 == 0
+    sig1: bytes[65] = slice(_sigs, start=0, len=65)
+    sig2: bytes[65] = slice(_sigs, start=65, len=65)
+    confSig1: bytes[65] = slice(_sigs, start=130, len=65)
     confirmationHash: bytes32 = sha3(concat(_txHash, _rootHash))
 
     check1: bool = True
@@ -89,7 +90,7 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
 
     check1 = self.ecrecoverSig(_txHash, sig1) == self.ecrecoverSig(confirmationHash, confSig1)
     if _blknum2 > 0:
-        confSig2: bytes[1024] = slice(_sigs, start=195, len=65)
+        confSig2: bytes[65] = slice(_sigs, start=195, len=65)
         check2 = self.ecrecoverSig(_txHash, sig2) == self.ecrecoverSig(confirmationHash, confSig2)
 
     return check1 and check2
@@ -97,8 +98,8 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
 
 @private
 @constant
-def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes[1024]) -> bool:
-    assert len(_proof) == 512 # TODO: len(bytes[1024])
+def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes[512]) -> bool:
+    assert len(_proof) == 512
     proofElement: bytes32
     computedHash: bytes32 = _leaf
     index: uint256 = _index
@@ -184,6 +185,11 @@ def __init__(_priorityQueueTemplate: address):
 #
 
 # @dev Adds an exit to the exit queue.
+# @param _utxoPos Position of the UTXO in the child chain.
+# @param _exitor Owner of the UTXO.
+# @param _token Token to be exited.
+# @param _amount Amount to be exited.
+# @param _created_at Time when the UTXO was created.
 @private
 def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: timestamp):
     assert self.exitsQueues[_token] != ZERO_ADDRESS
@@ -199,7 +205,7 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
         token: _token,
         amount: _amount
     }
-    log.ExitStarted(msg.sender, _utxoPos, _token, _amount)
+    log.ExitStarted(_exitor, _utxoPos, _token, _amount)
 
 
 #
@@ -280,8 +286,12 @@ def startFeeExit(_token: address, _amount: uint256):
     
 
 # @dev Starts to exit a specified utxo.
+# @param _utxoPos The position of the exiting utxo in the format of blknum * 1000000000 + index * 10000 + oindex.
+# @param _txBytes The transaction being exited in RLP bytes format excluding signature fields.
+# @param _proof Proof of the exiting transactions inclusion for the block specified by utxoPos.
+# @param _sigs Both transaction signatures and confirmations signatures used to verify that the exiting transaction has been confirmed.
 @public
-def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _sigs: bytes[1024]):
+def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sigs: bytes[260]):
     blknum: uint256 = _utxoPos / 1000000000
     txindex: uint256 = (_utxoPos % 1000000000) / 10000
     oindex: uint256 = _utxoPos - blknum * 1000000000 - txindex * 10000
@@ -298,13 +308,19 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _si
     merkleHash: bytes32 = sha3(concat(txHash, slice(_sigs, start=0, len=130)))
 
     assert self.checkSigs(txHash, root, inputCount, _sigs)
-    assert self.checkMembership(txHash, txindex, root, _proof)
+    assert self.checkMembership(merkleHash, txindex, root, _proof)
 
     self.addExitToQueue(_utxoPos, exitor, token, amount, self.childChain[blknum].blockTimestamp)
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
+# @param _cUtxoPos The position of the challenging utxo.
+# @param _eUtxoIndex The output position of the exiting utxo.
+# @param _txBytes The challenging transaction in bytes RLP form excluding signature fields.
+# @param _proof Proof of inclusion for the transaction used to challenge.
+# @param _sigs Signatures for the transaction used to challenge(It doesn't include confirmations signatures).
+# @param _confirmationSig The confirmation signature for the transaction used to challenge.
 @public
-def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024], _proof: bytes[1024], _sigs: bytes[1024], _confirmationSig: bytes[1024]):
+def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sigs: bytes[130], _confirmationSig: bytes[65]):
     # The position of the exiting utxo
     eUtxoPos: uint256 = self.getUtxoPos(_txBytes, _eUtxoIndex)
     # The output position of the challenging utxo
@@ -323,7 +339,7 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024
     # if the utxo is a double spend, the confirmation signature was made by the owner of the exiting utxo.
     assert owner == self.ecrecoverSig(confirmationHash, _confirmationSig)
     # Check the merkle proof of the transaction used to challenge
-    assert self.checkMembership(txHash, txindex, root, _proof)
+    assert self.checkMembership(merkleHash, txindex, root, _proof)
 
     # Delete the owner but keep the amount to prevent another exit
     self.exits[eUtxoPos].owner = ZERO_ADDRESS
