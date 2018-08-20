@@ -226,12 +226,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const tx2 = new Transaction([
                 utils.toBuffer(Number(depositBlknum)), // blkbum1
-                Buffer.from([]), // txindex1
-                Buffer.from([]), // oindex1
+                utils.toBuffer(0), // txindex1
+                utils.toBuffer(0), // oindex1
 
-                Buffer.from([]), // blknum2
-                Buffer.from([]), // txindex2
-                Buffer.from([]), // oindex2
+                utils.toBuffer(0), // blknum2
+                utils.toBuffer(0), // txindex2
+                utils.toBuffer(0), // oindex2
 
                 utils.zeros(20), // token address
 
@@ -239,27 +239,11 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.toBuffer(depositAmountNum), // amount1
 
                 utils.zeros(20), // newowner2
-                Buffer.from([]) // amount2           
+                utils.toBuffer(0), // amount2           
             ]);
 
-            // const tx2 = new Transaction([
-            //     String(Number(depositBlknum)),
-            //     Buffer.from(),
-            //     "0",
-
-            //     "0",
-            //     "0",
-            //     "0",
-
-            //     "0",
-            //     Buffer.from(String(owner)),
-            //     String(depositAmountNum),
-
-            //     String(utils.zeros(20)),
-            //     "0"
-            // ]);
-
             const txBytes2 = utils.bufferToHex(tx2.serializeTx());
+            // const txBytes2 = utils.bufferToHex(rlp.encode(tx2));
             console.log(txBytes2);
             // const txBytes2 = utils.bufferToHex(rlp.encode([Number(depositBlknum), 0, 0, 0, 0, 0, 0, owner, depositAmountNum, 0, 0, 0, 0]));
             tx2.sign1(owenerKey);
@@ -285,7 +269,11 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const utxoPos2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
 
-            const encodedTx = "\xf84e02808080808094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000080";
+            // const encodedTx = "\xf8\x4e\x02\x80\x80\x80\x80\x80\x940000000000000000000000000000000000000000\x94627306090abab3a6e1400e9345bc60c78a8bef57\x872386f26fc10000\x940000000000000000000000000000000000000000\x80";
+            // const encodedTx = "\xf8\xd4\x02\x80\x80\x80\x80\x80\x940000000000000000000000000000000000000000\x94627306090abab3a6e1400e9345bc60c78a8bef57\x872386f26fc10000\x940000000000000000000000000000000000000000\x80\xb8\x410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\xb8\x410000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            // const encodedTx = "\xf8\x4e\x02\x00\x00\x00\x00\x00\x940000000000000000000000000000000000000000\x94627306090abab3a6e1400e9345bc60c78a8bef57\x872386f26fc10000\x940000000000000000000000000000000000000000\x00";
+            const encodedTx = "0xf84e02000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
+
             await rootChain.startExit(utxoPos2, encodedTx, proof, sigs);
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority2);

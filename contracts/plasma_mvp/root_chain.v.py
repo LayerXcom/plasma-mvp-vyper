@@ -37,20 +37,20 @@ currentFeeExit: uint256
 @constant
 def createExitingTx(_exitingTxBytes: bytes[1024], _oIndex: uint256) -> (address, address, uint256, uint256):
     # NOTE: RLP decoder needs to be deployed
-    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
+    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, token, newowner1, amount1, newowner2, amount2]
     # TODO: Make sure that tx which has one output only decoded correctly.
-    txList = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
+    txList = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256])
     if _oIndex == 0:
         return txList[7], txList[6], txList[8], txList[0] * txList[3] # exitor, token, amount, inputCount
     if _oIndex == 1:
         return txList[9], txList[6], txList[10], txList[0] * txList[3] # exitor, token, amount, inputCount
-
+    
 
 @private
 @constant
 def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
-    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2, sig1, sig2]
-    txList = RLPList(_challengingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256, bytes32, bytes32])
+    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2]
+    txList = RLPList(_challengingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256])
     if _oIndex == 0:
         return txList[0] + txList[1] + txList[2]
     if _oIndex == 1:
@@ -67,7 +67,7 @@ def ecrecoverSig(_txHash: bytes32, _sig: bytes[65]) -> address:
     # {bytes32 r}{bytes32 s}{uint8 v}
     r: uint256 = extract32(_sig, 0, type=uint256)
     s: uint256 = extract32(_sig, 32, type=uint256)
-    v: int128 = convert(slice(_sig, start=64, len=1), "int128")
+    v: int128 = convert(slice(_sig, start=64, len=1), "int128")    
     # Version of signature should be 27 or 28, but 0 and 1 are also possible versions.
     # geth uses [0, 1] and some clients have followed. This might change, see:
     # https://github.com/ethereum/go-ethereum/issues/2053
@@ -284,7 +284,7 @@ def startFeeExit(_token: address, _amount: uint256):
 
 # @dev Starts to exit a specified utxo.
 # @param _utxoPos The position of the exiting utxo in the format of blknum * 1000000000 + index * 10000 + oindex.
-# @param _txBytes The transaction being exited in RLP bytes format.
+# @param _txBytes The transaction being exited in RLP bytes format excluding signature fields.
 # @param _proof Proof of the exiting transactions inclusion for the block specified by utxoPos.
 # @param _sigs Both transaction signatures and confirmations signatures used to verify that the exiting transaction has been confirmed.
 @public
@@ -312,7 +312,7 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sig
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 # @param _cUtxoPos The position of the challenging utxo.
 # @param _eUtxoIndex The output position of the exiting utxo.
-# @param _txBytes The challenging transaction in bytes RLP form.
+# @param _txBytes The challenging transaction in bytes RLP form excluding signature fields.
 # @param _proof Proof of inclusion for the transaction used to challenge.
 # @param _sigs Signatures for the transaction used to challenge(It doesn't include confirmations signatures).
 # @param _confirmationSig The confirmation signature for the transaction used to challenge.
