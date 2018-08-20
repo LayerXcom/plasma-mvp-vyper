@@ -71,41 +71,6 @@ class FixedMerkleTree {
         }
         return proof
     }
-
-    getProof(leaf, index) {
-        const proof = []
-
-        if (typeof index !== 'number') {
-            index = -1
-            for (let i = 0; i < this.leaves.length; i++) {
-                if (Buffer.compare(leaf, this.leaves[i]) === 0) {
-                    index = i
-                }
-            }
-        }
-
-        if (index <= -1) {
-            return []
-        }
-
-        for (let i = 0; i < this.layers.length; i++) {
-            const layer = this.layers[i]
-            const isRightNode = index % 2
-            const pairIndex = isRightNode ? index - 1 : index + 1
-
-            if (pairIndex < layer.length) {
-                proof.push({
-                    position: isRightNode ? 'left' : 'right',
-                    data: layer[pairIndex]
-                })
-            }
-
-            // set index to parent index
-            index = (index / 2) | 0
-        }
-
-        return proof
-    }
 }
 
 module.exports = FixedMerkleTree;
