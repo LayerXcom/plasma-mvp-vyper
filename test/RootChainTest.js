@@ -237,10 +237,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.toBuffer(0), // amount2           
             ]);
 
-            // RLP encoded tx2            
+            // RLP encoded tx2 because of RLP Decoder in vyper
             const encodedTx2 = "0xf84e02000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
-
-            tx2.sign1(owenerKey);
+            // const encodedTx2 = "0xf84e02808080808094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000080";            
 
             const merkleHash = tx2.merkleHash();
             const tree = new FixedMerkleTree(16, [merkleHash]);
@@ -253,11 +252,20 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const priority2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
             const [root, _] = await rootChain.getChildChain(Number(childBlknum));
+
+            const vrs = utils.ecsign(utils.sha3(encodedTx2), owenerKey);
+            const sig1 = utils.toBuffer(utils.toRpcSig(vrs.v, vrs.r, vrs.s));
+            const confVrs = utils.ecsign(
+                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx2)), utils.toBuffer(root)])),
+                owenerKey
+            );
+            const confirmSig = utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s));
+
             const sigs = utils.bufferToHex(
                 Buffer.concat([
-                    tx2.sig1,
-                    tx2.sig2,
-                    tx2.confirmSig(utils.toBuffer(root), owenerKey)
+                    sig1,
+                    utils.zeros(65),
+                    confirmSig
                 ])
             );
 
@@ -377,13 +385,13 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             expectedOwner.should.equal(owner);
             tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
-            
+
             const preBalance = web3.eth.getBalance(owner);
             const res = await rootChain.finalizeExits(ZERO_ADDRESS);
             const gasCost = getTransactionGasCost(res["tx"]);
             const postBalance = web3.eth.getBalance(owner);
 
-            postBalance.plus(gasCost).should.be.bignumber.equal(preBalance.plus(depositAmount)); 
+            postBalance.plus(gasCost).should.be.bignumber.equal(preBalance.plus(depositAmount));
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
             expectedOwner.should.equal(ZERO_ADDRESS);

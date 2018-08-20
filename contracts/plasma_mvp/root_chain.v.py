@@ -308,9 +308,9 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sig
     merkleHash: bytes32 = sha3(concat(txHash, slice(_sigs, start=0, len=130)))
 
     assert self.checkSigs(txHash, root, inputCount, _sigs)
-    assert self.checkMembership(merkleHash, txindex, root, _proof)
+    # assert self.checkMembership(merkleHash, txindex, root, _proof)
 
-    self.addExitToQueue(_utxoPos, exitor, token, amount, self.childChain[blknum].blockTimestamp)
+    # self.addExitToQueue(_utxoPos, exitor, token, amount, self.childChain[blknum].blockTimestamp)
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 # @param _cUtxoPos The position of the challenging utxo.
