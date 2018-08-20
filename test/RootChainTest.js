@@ -148,7 +148,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
             const depositPriotiy = exitableAt << 128 | utxoPos;
-            feePriority.should.to.be.above(depositPriotiy);
+            feePriority.should.be.above(depositPriotiy);
         });
 
         it("should fail if transaction sender isn't the authority", async () => {
