@@ -11,7 +11,6 @@ const { advanceBlock } = require('./helpers/advanceToBlock');
 const RootChain = artifacts.require("root_chain");
 const PriorityQueue = artifacts.require("priority_queue");
 
-const rlp = utils.rlp;
 const BigNumber = web3.BigNumber;
 const BN = utils.BN;
 
@@ -162,29 +161,25 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
         it("cannot exit twice off of the same utxo", async () => {
             const tx1 = new Transaction([
-                Buffer.from([]), // blkbum1
-                Buffer.from([]), // txindex1
-                Buffer.from([]), // oindex1
+                utils.toBuffer(0), // blkbum1
+                utils.toBuffer(0), // txindex1
+                utils.toBuffer(0), // oindex1
 
-                Buffer.from([]), // blknum2
-                Buffer.from([]), // txindex2
-                Buffer.from([]), // oindex2
+                utils.toBuffer(0), // blknum2
+                utils.toBuffer(0), // txindex2
+                utils.toBuffer(0), // oindex2
 
                 utils.zeros(20), // token address
 
                 utils.toBuffer(owner), // newowner1
-                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+                utils.toBuffer(depositAmountNum), // amount1
 
                 utils.zeros(20), // newowner2
-                Buffer.from([]) // amount2           
+                utils.toBuffer(0) // amount2   
             ]);
-            const txBytes1 = utils.bufferToHex(tx1.serializeTx());
 
-            // const depositTxHash = utils.sha3(Buffer.concat([
-            //     utils.toBuffer(owner),
-            //     utils.zeros(20),
-            //     depositAmountBN.toArrayLike(Buffer, 'be', 32)
-            // ]));
+            // RLP encoded tx1            
+            const encodedTx1 = "0xf84e00000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
 
             const depositBlknum = await rootChain.getDepositBlock();
             depositBlknum.should.be.bignumber.equal(num1);
@@ -212,7 +207,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const utxoPos1 = Number(depositBlknum) * 1000000000 + 10000 * 0 + 1;
 
-            await expectThrow(rootChain.startExit(utxoPos1, txBytes1, proof, sigs), EVMRevert);
+            await expectThrow(rootChain.startExit(utxoPos1, encodedTx1, proof, sigs), EVMRevert);
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority1);
             expectedOwner.should.equal(owner);
@@ -226,12 +221,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const tx2 = new Transaction([
                 utils.toBuffer(Number(depositBlknum)), // blkbum1
-                Buffer.from([]), // txindex1
-                Buffer.from([]), // oindex1
+                utils.toBuffer(0), // txindex1
+                utils.toBuffer(0), // oindex1
 
-                Buffer.from([]), // blknum2
-                Buffer.from([]), // txindex2
-                Buffer.from([]), // oindex2
+                utils.toBuffer(0), // blknum2
+                utils.toBuffer(0), // txindex2
+                utils.toBuffer(0), // oindex2
 
                 utils.zeros(20), // token address
 
@@ -239,29 +234,12 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.toBuffer(depositAmountNum), // amount1
 
                 utils.zeros(20), // newowner2
-                Buffer.from([]) // amount2           
+                utils.toBuffer(0), // amount2           
             ]);
 
-            // const tx2 = new Transaction([
-            //     String(Number(depositBlknum)),
-            //     Buffer.from(),
-            //     "0",
+            // RLP encoded tx2            
+            const encodedTx2 = "0xf84e02000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
 
-            //     "0",
-            //     "0",
-            //     "0",
-
-            //     "0",
-            //     Buffer.from(String(owner)),
-            //     String(depositAmountNum),
-
-            //     String(utils.zeros(20)),
-            //     "0"
-            // ]);
-
-            const txBytes2 = utils.bufferToHex(tx2.serializeTx());
-            console.log(txBytes2);
-            // const txBytes2 = utils.bufferToHex(rlp.encode([Number(depositBlknum), 0, 0, 0, 0, 0, 0, owner, depositAmountNum, 0, 0, 0, 0]));
             tx2.sign1(owenerKey);
 
             const merkleHash = tx2.merkleHash();
@@ -285,8 +263,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const utxoPos2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
 
-            const encodedTx = "\xf84e02808080808094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000080";
-            await rootChain.startExit(utxoPos2, encodedTx, proof, sigs);
+            await rootChain.startExit(utxoPos2, encodedTx2, proof, sigs);
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority2);
             expectedOwner.should.equal(owner);
@@ -300,21 +277,21 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const childBlknum = await rootChain.getCurrentChildBlock();
 
             const tx2 = new Transaction([
-                (new BN(Number(depositBlknum))).toArrayLike(Buffer, 'be', 32), // blkbum1
-                Buffer.from([]), // txindex1
-                Buffer.from([]), // oindex1
+                utils.toBuffer(Number(depositBlknum)), // blkbum1
+                utils.toBuffer(0), // txindex1
+                utils.toBuffer(0), // oindex1
 
-                Buffer.from([]), // blknum2
-                Buffer.from([]), // txindex2
-                Buffer.from([]), // oindex2
+                utils.toBuffer(0), // blknum2
+                utils.toBuffer(0), // txindex2
+                utils.toBuffer(0), // oindex2
 
                 utils.zeros(20), // token address
 
-                utils.toBuffer(owner), // newowner1
-                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+                utils.toBuffer(owner), // newowner1                
+                utils.toBuffer(depositAmountNum), // amount1
 
                 utils.zeros(20), // newowner2
-                Buffer.from([]) // amount2           
+                utils.toBuffer(0), // amount2           
             ]);
 
             let merkleHash = tx2.merkleHash();
@@ -328,24 +305,27 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.deposit({ value: depositAmount, from: owner });
 
             const tx3 = new Transaction([
-                (new BN(Number(childBlknum))).toArrayLike(Buffer, 'be', 32), // blkbum1
-                Buffer.from([]), // txindex1
-                Buffer.from([]), // oindex1
+                utils.toBuffer(Number(childBlknum)), // blkbum1
+                utils.toBuffer(0), // txindex1
+                utils.toBuffer(0), // oindex1
 
-                (new BN(Number(depositBlknum2))).toArrayLike(Buffer, 'be', 32), // blknum2
-                Buffer.from([]), // txindex2
-                Buffer.from([]), // oindex2
+                utils.toBuffer(Number(depositBlknum2)), // blknum2
+                utils.toBuffer(0), // txindex2
+                utils.toBuffer(0), // oindex2
 
                 utils.zeros(20), // token address
 
                 utils.toBuffer(owner), // newowner1
-                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+                utils.toBuffer(depositAmountNum), // amount1
 
                 utils.zeros(20), // newowner2
-                Buffer.from([]) // amount2           
+                utils.toBuffer(0) // amount2           
             ]);
 
             const txBytes3 = utils.bufferToHex(tx3.serializeTx());
+            console.log(txBytes3);
+            const encodedTx3 = "";
+
             tx3.sign1(owenerKey);
             tx3.sign2(owenerKey);
 
@@ -386,24 +366,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
     describe("finalizeExits", () => {
         it("can start exits and finalize exits", async () => {
-            const tx1 = new Transaction([
-                Buffer.from([]), // blkbum1
-                Buffer.from([]), // txindex1
-                Buffer.from([]), // oindex1
-
-                Buffer.from([]), // blknum2
-                Buffer.from([]), // txindex2
-                Buffer.from([]), // oindex2
-
-                utils.zeros(20), // token address
-
-                utils.toBuffer(owner), // newowner1
-                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
-
-                utils.zeros(20), // newowner2
-                Buffer.from([]) // amount2           
-            ]);
-
             const depositBlknum1 = await rootChain.getDepositBlock();
             await rootChain.deposit({ value: depositAmount, from: owner });
             const utxoPos1 = Number(depositBlknum1) * 1000000000 + 10000 * 0;

@@ -2,7 +2,7 @@ const utils = require('ethereumjs-util');
 const { Buffer } = require('safe-buffer');
 
 const BN = utils.BN
-const rlp = utils.rlp
+const rlp = utils.rlp;
 const ZeroBalance = new BN(0)
 const getFields = () => [
     {
