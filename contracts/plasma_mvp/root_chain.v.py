@@ -35,10 +35,8 @@ currentFeeExit: uint256
 
 @private
 @constant
-def createExitingTx(_exitingTxBytes: bytes[1024], _oIndex: uint256) -> (address, address, uint256, uint256):
-    # NOTE: RLP decoder needs to be deployed
-    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, token, newowner1, amount1, newowner2, amount2]
-    # TODO: Make sure that tx which has one output only decoded correctly.
+def createExitingTx(_exitingTxBytes: bytes[1024], _oIndex: uint256) -> (address, address, uint256, uint256):    
+    # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, token, newowner1, amount1, newowner2, amount2]    
     txList = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256])
     if _oIndex == 0:
         return txList[7], txList[6], txList[8], txList[0] * txList[3] # exitor, token, amount, inputCount
