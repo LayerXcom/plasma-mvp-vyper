@@ -130,10 +130,11 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const blknum = await rootChain.getDepositBlock();
             await rootChain.deposit({ value: depositAmount, from: owner });
 
+            (await rootChain.getCurrentFeeExit()).should.be.bignumber.equal(num1);
+
             const expectedUtxoAt = await rootChain.getCurrentFeeExit();
             const expectedExitableAt = (await latestTime()) + duration.weeks(2) + 1;
 
-            (await rootChain.getCurrentFeeExit()).should.be.bignumber.equal(num1);
             await rootChain.startFeeExit(ZERO_ADDRESS, 1);
             (await rootChain.getCurrentFeeExit()).should.be.bignumber.equal(num2);
 
