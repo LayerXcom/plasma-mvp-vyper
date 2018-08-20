@@ -187,6 +187,11 @@ def __init__(_priorityQueueTemplate: address):
 #
 
 # @dev Adds an exit to the exit queue.
+# @param _utxoPos Position of the UTXO in the child chain.
+# @param _exitor Owner of the UTXO.
+# @param _token Token to be exited.
+# @param _amount Amount to be exited.
+# @param _created_at Time when the UTXO was created.
 @private
 def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount: uint256, _created_at: timestamp):
     assert self.exitsQueues[_token] != ZERO_ADDRESS
@@ -202,7 +207,7 @@ def addExitToQueue(_utxoPos: uint256, _exitor: address, _token: address, _amount
         token: _token,
         amount: _amount
     }
-    log.ExitStarted(msg.sender, _utxoPos, _token, _amount)
+    log.ExitStarted(_exitor, _utxoPos, _token, _amount)
 
 
 #
