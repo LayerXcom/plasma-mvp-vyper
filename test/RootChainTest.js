@@ -124,7 +124,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     });
 
     describe("startFeeExit", () => {
-        it("feePriority should be larger than depositPriority", async () => {
+        it("fee exit should get exitable after deposit exit", async () => {
             let utxoPos, exitableAt;
 
             const blknum = await rootChain.getDepositBlock();
@@ -137,18 +137,16 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.startFeeExit(ZERO_ADDRESS, 1);
             (await rootChain.getCurrentFeeExit()).should.be.bignumber.equal(num2);
 
-            [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
-            const feePriority = exitableAt << 128 | utxoPos;
+            [utxoPos, feeExitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
 
             utxoPos.should.be.bignumber.equal(expectedUtxoAt);
-            exitableAt.should.be.bignumber.equal(expectedExitableAt);
+            feeExitableAt.should.be.bignumber.equal(expectedExitableAt);
 
             const expectedUtxoPos = blknum.mul(utxoOrder).plus(num1);
             await rootChain.startDepositExit(expectedUtxoPos, ZERO_ADDRESS, depositAmount);
 
-            [utxoPos, exitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
-            const depositPriotiy = exitableAt << 128 | utxoPos;
-            feePriority.should.be.above(depositPriotiy);
+            [utxoPos, depositExitableAt] = await rootChain.getNextExit(ZERO_ADDRESS);
+            feeExitableAt.should.be.bignumber.above(depositExitableAt);
         });
 
         it("should fail if transaction sender isn't the authority", async () => {
