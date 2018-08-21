@@ -358,24 +358,28 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
     describe("challengeExit", () => {
         it("can challenge exit", async () => {
             const tx1 = new Transaction([
-                Buffer.from([]), // blkbum1
-                Buffer.from([]), // txindex1
-                Buffer.from([]), // oindex1
+                utils.toBuffer(0), // blkbum1
+                utils.toBuffer(0), // txindex1
+                utils.toBuffer(0), // oindex1
 
-                Buffer.from([]), // blknum2
-                Buffer.from([]), // txindex2
-                Buffer.from([]), // oindex2
+                utils.toBuffer(0), // blknum2
+                utils.toBuffer(0), // txindex2
+                utils.toBuffer(0), // oindex2
 
                 utils.zeros(20), // token address
 
                 utils.toBuffer(owner), // newowner1
-                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+                utils.toBuffer(depositAmountNum), // amount1
 
                 utils.zeros(20), // newowner2
-                Buffer.from([]) // amount2           
+                utils.toBuffer(0) // amount2   
             ]);
 
-            const depositTxHash = utils.sha3(owner + ZERO_ADDRESS + String(depositAmount)); // TODO
+            // RLP encoded tx1            
+            const encodedTx1 = "0xf84e00000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
+
+            const merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx1)), utils.zeros(65), utils.zeros(65)]));
+
             let depositBlknum = await rootChain.getDepositBlock();
 
             const utxoPos1 = Number(depositBlknum) * 1000000000 + 1;  // 1
@@ -385,8 +389,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const utxoPos2 = Number(depositBlknum) * 1000000000;  // 2
             await rootChain.deposit({ value: depositAmount, from: owner });
 
-            let tree = new FixedMerkleTree(16, [depositTxHash]);
-            let proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(depositTxHash)));
+            let tree = new FixedMerkleTree(16, [merkleHash]);
+            let proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             let [root, _] = await rootChain.getChildChain(Number(utxoPos1));
             let sigs = utils.bufferToHex(
