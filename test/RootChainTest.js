@@ -313,9 +313,10 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const vrs1 = utils.ecsign(utils.sha3(encodedTx3), owenerKey);
             const sig1 = utils.toBuffer(utils.toRpcSig(vrs1.v, vrs1.r, vrs1.s));
 
+            const vrs2 = utils.ecsign(utils.sha3(encodedTx3), nonOwnerKey);
+            const sig2 = utils.toBuffer(utils.toRpcSig(vrs2.v, vrs2.r, vrs2.s));
 
-
-            const merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), sig1, utils.zeros(65)]));
+            const merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), sig1, sig2]));
 
             const tree = new FixedMerkleTree(16, [merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
@@ -328,23 +329,30 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const priority2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
             const [root, _] = await rootChain.getChildChain(Number(childBlknum));
 
-            const confVrs = utils.ecsign(
-                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx2)), utils.toBuffer(root)])),
+            const confVrs1 = utils.ecsign(
+                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), utils.toBuffer(root)])),
                 owenerKey
             );
-            const confirmSig = utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s));
+            const confirmSig1 = utils.toBuffer(utils.toRpcSig(confVrs1.v, confVrs1.r, confVrs1.s));
+
+            const confVrs2 = utils.ecsign(
+                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), utils.toBuffer(root)])),
+                nonOwnerKey
+            );
+            const confirmSig2 = utils.toBuffer(utils.toRpcSig(confVrs2.v, confVrs2.r, confVrs2.s));
 
             const sigs = utils.bufferToHex(
                 Buffer.concat([
                     sig1,
-                    utils.zeros(65),
-                    confirmSig
+                    sig2,
+                    confirmSig1,
+                    confirmSig2
                 ])
             );
 
             const utxoPos2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
 
-            await rootChain.startExit(utxoPos2, encodedTx2, proof, sigs);
+            await rootChain.startExit(utxoPos2, encodedTx3, proof, sigs);
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority2);
             expectedOwner.should.equal(owner);
