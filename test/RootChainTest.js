@@ -56,11 +56,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         rootChain = await RootChain.new(priorityQueue.address, { from: owner });
     });
 
-    describe("submitBlock", () => {
-        it("should update block numbers", async () => {
-        });
-    });
-
     describe("deposit", () => {
         it("should accespt deposit", async () => {
             const blknum = await rootChain.getDepositBlock();
@@ -216,8 +211,8 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         });
 
         it("can exit single input", async () => {
-            await rootChain.deposit({ value: depositAmount, from: owner });
             const depositBlknum = await rootChain.getDepositBlock();
+            await rootChain.deposit({ value: depositAmount, from: owner });
 
             const tx2 = new Transaction([
                 utils.toBuffer(Number(depositBlknum)), // blkbum1
@@ -238,7 +233,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             ]);
 
             // RLP encoded tx2 because of RLP Decoder in vyper
-            const encodedTx2 = "0xf84e02000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
+            const encodedTx2 = "0xf84e01000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
             // const encodedTx2 = "0xf84e02808080808094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000080";            
 
             const vrs = utils.ecsign(utils.sha3(encodedTx2), owenerKey);
@@ -282,16 +277,18 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
         });
 
         it("can exit double input (and submit block twice)", async () => {
-            await rootChain.deposit({ value: depositAmount, from: owner });
             const depositBlknum = await rootChain.getDepositBlock();
-            const childBlknum = await rootChain.getCurrentChildBlock();
+            await rootChain.deposit({ value: depositAmount, from: owner });
 
-            const tx2 = new Transaction([
+            const depositBlknum2 = await rootChain.getDepositBlock();
+            await rootChain.deposit({ value: depositAmount, from: nonOwner });
+
+            const tx3 = new Transaction([
                 utils.toBuffer(Number(depositBlknum)), // blkbum1
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
 
-                utils.toBuffer(0), // blknum2
+                utils.toBuffer(Number(depositBlknum2)), // blknum2
                 utils.toBuffer(0), // txindex2
                 utils.toBuffer(0), // oindex2
 
@@ -304,66 +301,54 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.toBuffer(0), // amount2           
             ]);
 
-            let merkleHash = tx2.merkleHash();
-            let tree = new FixedMerkleTree(16, [merkleHash]);
-            childBlknum.should.be.bignumber.equal(new BigNumber(1000));
-            await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
+            // RLP encoded tx3 because of RLP Decoder in vyper
+            const encodedTx3 = "0xf84e01000002000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
 
-            const depositBlknum2 = await rootChain.getDepositBlock();
-            depositBlknum2.should.be.bignumber.equal(new BigNumber(1001));
+            const vrs1 = utils.ecsign(utils.sha3(encodedTx3), owenerKey);
+            const sig1 = utils.toBuffer(utils.toRpcSig(vrs1.v, vrs1.r, vrs1.s));
 
-            await rootChain.deposit({ value: depositAmount, from: owner });
+            const vrs2 = utils.ecsign(utils.sha3(encodedTx3), nonOwnerKey);
+            const sig2 = utils.toBuffer(utils.toRpcSig(vrs2.v, vrs2.r, vrs2.s));
 
-            const tx3 = new Transaction([
-                utils.toBuffer(Number(childBlknum)), // blkbum1
-                utils.toBuffer(0), // txindex1
-                utils.toBuffer(0), // oindex1
+            const merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), sig1, sig2]));
 
-                utils.toBuffer(Number(depositBlknum2)), // blknum2
-                utils.toBuffer(0), // txindex2
-                utils.toBuffer(0), // oindex2
-
-                utils.zeros(20), // token address
-
-                utils.toBuffer(owner), // newowner1
-                utils.toBuffer(depositAmountNum), // amount1
-
-                utils.zeros(20), // newowner2
-                utils.toBuffer(0) // amount2           
-            ]);
-
-            const txBytes3 = utils.bufferToHex(tx3.serializeTx());
-            console.log(txBytes3);
-            const encodedTx3 = "";
-
-            tx3.sign1(owenerKey);
-            tx3.sign2(owenerKey);
-
-            merkleHash = tx3.merkleHash();
-            tree = new FixedMerkleTree(16, [merkleHash]);
+            const tree = new FixedMerkleTree(16, [merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
-            const childBlknum2 = await rootChain.getCurrentChildBlock();
-            childBlknum2.should.be.bignumber.equal(new BigNumber(2000));
+            const childBlknum = await rootChain.getCurrentChildBlock();
+            childBlknum.should.be.bignumber.equal(new BigNumber(1000));
 
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
-            const priority3 = Number(childBlknum2) * 1000000000 + 10000 * 0 + 0;
+            const priority2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
+            const [root, _] = await rootChain.getChildChain(Number(childBlknum));
 
-            const [root, _] = await rootChain.getChildChain(Number(childBlknum2));
+            const confVrs1 = utils.ecsign(
+                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), utils.toBuffer(root)])),
+                owenerKey
+            );
+            const confirmSig1 = utils.toBuffer(utils.toRpcSig(confVrs1.v, confVrs1.r, confVrs1.s));
+
+            const confVrs2 = utils.ecsign(
+                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), utils.toBuffer(root)])),
+                nonOwnerKey
+            );
+            const confirmSig2 = utils.toBuffer(utils.toRpcSig(confVrs2.v, confVrs2.r, confVrs2.s));
+
             const sigs = utils.bufferToHex(
                 Buffer.concat([
-                    tx2.sig1,
-                    tx2.sig2,
-                    tx2.confirmSig(utils.toBuffer(root), owenerKey),
-                    tx2.confirmSig(utils.toBuffer(root), owenerKey)
+                    sig1,
+                    sig2,
+                    confirmSig1,
+                    confirmSig2
                 ])
             );
-            const utxoPos3 = Number(childBlknum2) * 1000000000 + 10000 * 0 + 0;
 
-            await rootChain.startExit(utxoPos3, txBytes3, proof, sigs);
+            const utxoPos2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
 
-            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority3);
+            await rootChain.startExit(utxoPos2, encodedTx3, proof, sigs);
+
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority2);
             expectedOwner.should.equal(owner);
             tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
