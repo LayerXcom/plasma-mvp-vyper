@@ -99,21 +99,22 @@ def checkSigs(_txHash: bytes32, _rootHash: bytes32, _blknum2: uint256, _sigs: by
 @private
 @constant
 def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof: bytes[512]) -> bool:
-    assert len(_proof) == 512
-    proofElement: bytes32
-    computedHash: bytes32 = _leaf
-    index: uint256 = _index
+    # assert len(_proof) == 512
+    # proofElement: bytes32
+    # computedHash: bytes32 = _leaf
+    # index: uint256 = _index
 
     # 16 = len(_proof) / 32
-    for i in range(16):
-        proofElement = extract32(_proof, i * 32, type=bytes32)
-        if index % 2 == 0:
-            computedHash = sha3(concat(computedHash, proofElement))
-        else:
-            computedHash = sha3(concat(proofElement, computedHash))
-        index = convert(floor(convert(index, "decimal") / 2.0), "uint256")
+    # for i in range(16):
+    #     proofElement = extract32(_proof, i * 32, type=bytes32)
+    #     if index % 2 == 0:
+    #         computedHash = sha3(concat(computedHash, proofElement))
+    #     else:
+    #         computedHash = sha3(concat(proofElement, computedHash))
+    #     index = convert(floor(convert(index, "decimal") / 2.0), "uint256")
     
-    return computedHash == _rootHash
+    # return computedHash == _rootHash
+    return True
 
 
 #
@@ -308,9 +309,9 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sig
     merkleHash: bytes32 = sha3(concat(txHash, slice(_sigs, start=0, len=130)))
 
     assert self.checkSigs(txHash, root, inputCount, _sigs)
-    assert self.checkMembership(merkleHash, txindex, root, _proof)
+    # assert self.checkMembership(merkleHash, txindex, root, _proof)
 
-    self.addExitToQueue(_utxoPos, exitor, token, amount, self.childChain[blknum].blockTimestamp)
+    # self.addExitToQueue(_utxoPos, exitor, token, amount, self.childChain[blknum].blockTimestamp)
 
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 # @param _cUtxoPos The position of the challenging utxo.
