@@ -562,43 +562,47 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             let childBlknum = await rootChain.getCurrentChildBlock();
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
-            let confVrs = utils.ecsign(
+            [root, _] = await rootChain.getChildChain(Number(childBlknum));
+
+            confVrs = utils.ecsign(
                 utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), utils.toBuffer(root)])),
                 owenerKey
             );
-            let confirmSig = utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s));
+            confirmSig = utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s));
 
             sigs = utils.bufferToHex(
                 Buffer.concat([
-                    tx3.sig1,
-                    tx3.sig2
+                    sig1,
+                    utils.zeros(65)
                 ])
             );
             const utxoPos3 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
 
 
             const tx4 = new Transaction([
-                (new BN(Number(utxoPos1))).toArrayLike(Buffer, 'be', 32), // blkbum1
-                Buffer.from([]), // txindex1
-                Buffer.from([]), // oindex1
+                utils.toBuffer(utxoPos1), // blkbum1                
+                utils.toBuffer(0), // txindex1
+                utils.toBuffer(0), // oindex1
 
-                Buffer.from([]), // blknum2
-                Buffer.from([]), // txindex2
-                Buffer.from([]), // oindex2
+                utils.toBuffer(0), // blknum2
+                utils.toBuffer(0), // txindex2
+                utils.toBuffer(0), // oindex2
 
                 utils.zeros(20), // token address
 
                 utils.toBuffer(owner), // newowner1
-                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+                utils.toBuffer(depositAmountNum), // amount1
 
                 utils.zeros(20), // newowner2
-                Buffer.from([]) // amount2           
+                utils.toBuffer(0) // amount2           
             ]);
 
-            const txBytes4 = utils.bufferToHex(tx4.serializeTx());
-            tx4.sign1(owenerKey);
+            const encodedTx4 = "0xf852843b9aca01000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
 
-            merkleHash = tx4.merkleHash();
+            vrs1 = utils.ecsign(utils.sha3(encodedTx4), owenerKey);
+            sig1 = utils.toBuffer(utils.toRpcSig(vrs1.v, vrs1.r, vrs1.s));
+
+            merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx4)), sig1, utils.zeros(65)]));
             tree = new FixedMerkleTree(16, [merkleHash]);
             proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
@@ -606,22 +610,33 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
             [root, _] = await rootChain.getChildChain(Number(childBlknum));
-            let confirmationSig = tx4.confirmSig(utils.toBuffer(root), owenerKey)
-            sigs = tx4.sig1 + tx4.sig2;
+
+            confVrs = utils.ecsign(
+                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx4)), utils.toBuffer(root)])),
+                owenerKey
+            );
+            confirmSig = utils.bufferToHex(utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s)));
+
+            sigs = utils.bufferToHex(
+                Buffer.concat([
+                    sig1,
+                    utils.zeros(65)
+                ])
+            );
 
             const utxoPos4 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
             const oindex1 = 0;
 
-            [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(utxoPos1);
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
             expectedOwner.should.equal(owner);
-            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
 
-            await rootChain.challengeExit(utxoPos4, oindex1, txBytes4, proof, sigs, confirmationSig);
+            await rootChain.challengeExit(utxoPos4, oindex1, encodedTx4, proof, sigs, confirmSig);
 
-            [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(utxoPos1);
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
             expectedOwner.should.equal(ZERO_ADDRESS);
-            tokenAddr.shoudl.equal(ZERO_ADDRESS);
+            tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
         });
 
