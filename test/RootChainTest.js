@@ -5,15 +5,13 @@ const { EVMRevert } = require('./helpers/EVMRevert');
 const { expectThrow } = require('./helpers/expectThrow');
 const FixedMerkleTree = require('./helpers/fixedMerkleTree');
 const Transaction = require('./helpers/transaction');
-const { keys, liveKeys } = require('./helpers/keys');
-const { advanceBlock } = require('./helpers/advanceToBlock');
+const { keys } = require('./helpers/keys');
 const { getTransactionGasCost } = require('./helpers/getGasCost');
 
 const RootChain = artifacts.require("root_chain");
 const PriorityQueue = artifacts.require("priority_queue");
 
 const BigNumber = web3.BigNumber;
-const BN = utils.BN;
 
 require('chai')
     .use(require('chai-as-promised'))
@@ -21,10 +19,9 @@ require('chai')
     .should();
 
 
-contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
+contract("RootChain", ([owner, nonOwner]) => {
     let rootChain;
     const depositAmount = new BigNumber(web3.toWei(0.01, 'ether'));
-    const depositAmountBN = new BN(web3.toWei(0.01, 'ether'));
     const depositAmountNum = Number(depositAmount);
     const utxoOrder = new BigNumber(1000000000);
     const num1 = new BigNumber(1);
@@ -32,7 +29,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
     const owenerKey = keys[0];
     const nonOwnerKey = keys[1];
-    const liveOwnerKey = liveKeys[0];
     const ZERO_ADDRESS = utils.bufferToHex(utils.zeros(20));
 
 
