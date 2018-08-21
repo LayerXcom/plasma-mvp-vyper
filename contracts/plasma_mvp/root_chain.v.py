@@ -339,10 +339,10 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024
     # if the utxo is a double spend, the confirmation signature was made by the owner of the exiting utxo.
     assert owner == self.ecrecoverSig(confirmationHash, _confirmationSig)
     # Check the merkle proof of the transaction used to challenge
-    # assert self.checkMembership(merkleHash, txindex, root, _proof)
+    assert self.checkMembership(merkleHash, txindex, root, _proof)
 
     # # Delete the owner but keep the amount to prevent another exit
-    # self.exits[eUtxoPos].owner = ZERO_ADDRESS
+    self.exits[eUtxoPos].owner = ZERO_ADDRESS
 
 
 # @dev Processes any exits that have completed the challenge period.
