@@ -510,7 +510,21 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             // should fails if transaction after exit doesn't reference the utxo being exited
             await expectThrow(rootChain.challengeExit(utxoPos3, oindex1, encodedTx3, proof, sigs, confirmSig), EVMRevert);
 
+            const reverseProof = proof
+                .slice(2)
+                .split('')
+                .reverse()
+                .join('');
+            // should fails if transaction proof is incorrect
+            await expectThrow(rootChain.challengeExit(utxoPos4, oindex1, encodedTx4, reverseProof, sigs, confirmSig), EVMRevert);
 
+            const reverseConfirmSig = confirmSig
+                .slice(2)
+                .split('')
+                .reverse()
+                .join('');
+            // should fails if transaction confirmation is incorrect
+            await expectThrow(rootChain.challengeExit(utxoPos4, oindex1, encodedTx4, proof, sigs, reverseConfirmSig), EVMRevert);
 
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
             expectedOwner.should.equal(owner);
@@ -523,20 +537,6 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             expectedOwner.should.equal(ZERO_ADDRESS);
             tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
-        });
-
-        // it("should fails if transaction after exit doesn't reference the utxo being exited", async () => {
-        //     await expectThrow(rootChain.challengeExit(utxoPos3, oindex1, encodedTx3, proof, sigs, confirmSig), EVMRevert);
-        // });
-
-        it("should fails if transaction proof is incorrect", async () => {
-            proof =
-                await expectThrow(rootChain.challengeExit(utxoPos4, oindex1, encodedTx4, proof, sigs, confirmSig), EVMRevert);
-        });
-
-        it("should fails if transaction confirmation is incorrect", async () => {
-            confirmationSig =
-                await expectThrow(rootChain.challengeExit(utxoPos4, oindex1, encodedTx4, proof, sigs, confirmSig), EVMRevert);
         });
     });
 
