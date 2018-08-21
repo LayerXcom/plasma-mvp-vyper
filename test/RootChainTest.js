@@ -116,7 +116,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
     describe("startFeeExit", () => {
         it("fee exit should get exitable after deposit exit", async () => {
-            let utxoPos, exitableAt;
+            let utxoPos;
 
             const blknum = await rootChain.getDepositBlock();
             await rootChain.deposit({ value: depositAmount, from: owner });
