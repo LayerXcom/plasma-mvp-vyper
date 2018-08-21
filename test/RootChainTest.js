@@ -507,6 +507,11 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const utxoPos4 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
             const oindex1 = 0;
 
+            // should fails if transaction after exit doesn't reference the utxo being exited
+            await expectThrow(rootChain.challengeExit(utxoPos3, oindex1, encodedTx3, proof, sigs, confirmSig), EVMRevert);
+
+
+
             [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
             expectedOwner.should.equal(owner);
             tokenAddr.should.equal(ZERO_ADDRESS);
@@ -520,9 +525,9 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             expectedAmount.should.be.bignumber.equal(depositAmount);
         });
 
-        it("should fails if transaction after exit doesn't reference the utxo being exited", async () => {
-            await expectThrow(rootChain.challengeExit(utxoPos3, oindex1, encodedTx3, proof, sigs, confirmSig), EVMRevert);
-        });
+        // it("should fails if transaction after exit doesn't reference the utxo being exited", async () => {
+        //     await expectThrow(rootChain.challengeExit(utxoPos3, oindex1, encodedTx3, proof, sigs, confirmSig), EVMRevert);
+        // });
 
         it("should fails if transaction proof is incorrect", async () => {
             proof =
