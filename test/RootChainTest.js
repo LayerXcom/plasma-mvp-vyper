@@ -449,13 +449,27 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
 
+            [root, _] = await rootChain.getChildChain(Number(childBlknum));
+
+            confVrs = utils.ecsign(
+                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx2)), utils.toBuffer(root)])),
+                owenerKey
+            );
+            confirmSig = utils.bufferToHex(utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s)));
+
+            sigs = utils.bufferToHex(
+                Buffer.concat([
+                    sig1,
+                    utils.zeros(65)
+                ])
+            );
 
             utxoPos2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
 
             const oindex1 = 0;
             await rootChain.challengeExit(utxoPos2, oindex1, encodedTx1, proof, sigs, confirmSig);
 
-            [expectedOwner, tokenAddr, expectedAmount] = await rootChasin.getExit(utxoPos2);
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos2);
             expectedOwner.should.equal(ZERO_ADDRESS);
             tokenAddr.shoudl.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
