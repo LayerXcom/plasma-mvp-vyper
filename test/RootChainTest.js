@@ -237,12 +237,15 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
                 utils.toBuffer(0), // amount2           
             ]);
 
-            // RLP encoded tx2            
+            // RLP encoded tx2 because of RLP Decoder in vyper
             const encodedTx2 = "0xf84e02000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
+            // const encodedTx2 = "0xf84e02808080808094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000080";            
 
-            tx2.sign1(owenerKey);
+            const vrs = utils.ecsign(utils.sha3(encodedTx2), owenerKey);
+            const sig1 = utils.toBuffer(utils.toRpcSig(vrs.v, vrs.r, vrs.s));
 
-            const merkleHash = tx2.merkleHash();
+            const merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx2)), sig1, utils.zeros(65)]));
+
             const tree = new FixedMerkleTree(16, [merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
@@ -253,11 +256,18 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             const priority2 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
             const [root, _] = await rootChain.getChildChain(Number(childBlknum));
+
+            const confVrs = utils.ecsign(
+                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx2)), utils.toBuffer(root)])),
+                owenerKey
+            );
+            const confirmSig = utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s));
+
             const sigs = utils.bufferToHex(
                 Buffer.concat([
-                    tx2.sig1,
-                    tx2.sig2,
-                    tx2.confirmSig(utils.toBuffer(root), owenerKey)
+                    sig1,
+                    utils.zeros(65),
+                    confirmSig
                 ])
             );
 
@@ -265,10 +275,10 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
             await rootChain.startExit(utxoPos2, encodedTx2, proof, sigs);
 
-            // [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority2);
-            // expectedOwner.should.equal(owner);
-            // tokenAddr.should.equal(ZERO_ADDRESS);
-            // expectedAmount.should.be.bignumber.equal(depositAmount);
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(priority2);
+            expectedOwner.should.equal(owner);
+            tokenAddr.should.equal(ZERO_ADDRESS);
+            expectedAmount.should.be.bignumber.equal(depositAmount);
         });
 
         it("can exit double input (and submit block twice)", async () => {
