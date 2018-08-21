@@ -506,7 +506,7 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
             const utxoPos2 = Number(depositBlknum) * 1000000000;  // 2
             await rootChain.deposit({ value: depositAmount, from: owner });
 
-            let merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx2)), utils.zeros(65), utils.zeros(65)]));
+            let merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx1)), utils.zeros(65), utils.zeros(65)]));
 
             let tree = new FixedMerkleTree(16, [merkleHash]);
             let proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
@@ -531,35 +531,43 @@ contract("RootChain", ([owner, nonOwner, priorityQueueAddr]) => {
 
 
 
-
-
-
             const tx3 = new Transaction([
-                (new BN(utxoPos2)).toArrayLike(Buffer, 'be', 32), // blkbum1
-                Buffer.from([]), // txindex1
-                Buffer.from([]), // oindex1
+                utils.toBuffer(utxoPos2), // blkbum1                
+                utils.toBuffer(0), // txindex1
+                utils.toBuffer(0), // oindex1
 
-                Buffer.from([]), // blknum2
-                Buffer.from([]), // txindex2
-                Buffer.from([]), // oindex2
+                utils.toBuffer(0), // blknum2
+                utils.toBuffer(0), // txindex2
+                utils.toBuffer(0), // oindex2
 
                 utils.zeros(20), // token address
 
                 utils.toBuffer(owner), // newowner1
-                depositAmountBN.toArrayLike(Buffer, 'be', 32), // amount1
+                utils.toBuffer(depositAmountNum), // amount1
 
                 utils.zeros(20), // newowner2
-                Buffer.from([]) // amount2           
+                utils.toBuffer(0) // amount2           
             ]);
-            const txBytes3 = utils.bufferToHex(tx3.serializeTx());
-            tx3.sign1(owenerKey);
 
-            merkleHash = tx3.merkleHash();
+            const encodedTx3 = "0xf8528477359400000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
+
+            let vrs1 = utils.ecsign(utils.sha3(encodedTx3), owenerKey);
+            let sig1 = utils.toBuffer(utils.toRpcSig(vrs1.v, vrs1.r, vrs1.s));
+
+            merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), sig1, utils.zeros(65)]));
+
             tree = new FixedMerkleTree(16, [merkleHash]);
             proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             let childBlknum = await rootChain.getCurrentChildBlock();
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
+
+            let confVrs = utils.ecsign(
+                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), utils.toBuffer(root)])),
+                owenerKey
+            );
+            let confirmSig = utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s));
+
             sigs = utils.bufferToHex(
                 Buffer.concat([
                     tx3.sig1,
