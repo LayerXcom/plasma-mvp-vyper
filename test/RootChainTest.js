@@ -151,23 +151,23 @@ contract("RootChain", ([owner, nonOwner]) => {
         let expectedOwner, tokenAddr, expectedAmount;
 
         it("cannot exit twice off of the same utxo", async () => {
-            const tx1 = new Transaction([
-                utils.toBuffer(0), // blkbum1
-                utils.toBuffer(0), // txindex1
-                utils.toBuffer(0), // oindex1
+            // const tx1 = [
+            //     utils.toBuffer(0), // blkbum1
+            //     utils.toBuffer(0), // txindex1
+            //     utils.toBuffer(0), // oindex1
 
-                utils.toBuffer(0), // blknum2
-                utils.toBuffer(0), // txindex2
-                utils.toBuffer(0), // oindex2
+            //     utils.toBuffer(0), // blknum2
+            //     utils.toBuffer(0), // txindex2
+            //     utils.toBuffer(0), // oindex2
 
-                utils.zeros(20), // token address
+            //     utils.zeros(20), // token address
 
-                utils.toBuffer(owner), // newowner1
-                utils.toBuffer(depositAmountNum), // amount1
+            //     utils.toBuffer(owner), // newowner1
+            //     utils.toBuffer(depositAmountNum), // amount1
 
-                utils.zeros(20), // newowner2
-                utils.toBuffer(0) // amount2   
-            ]);
+            //     utils.zeros(20), // newowner2
+            //     utils.toBuffer(0) // amount2   
+            // ];
 
             // RLP encoded tx1            
             const encodedTx1 = "0xf84e00000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
@@ -177,16 +177,19 @@ contract("RootChain", ([owner, nonOwner]) => {
 
             await rootChain.deposit({ value: depositAmount, from: owner });
 
-            const merkleHash = tx1.merkleHash();
+            const vrs = utils.ecsign(utils.sha3(encodedTx1), owenerKey);
+            const sig1 = utils.toBuffer(utils.toRpcSig(vrs.v, vrs.r, vrs.s));
+
+            const merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx1)), sig1, utils.zeros(65)]));
+
             const tree = new FixedMerkleTree(16, [merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             const [root, _] = await rootChain.getChildChain(Number(depositBlknum));
             const sigs = utils.bufferToHex(
                 Buffer.concat([
-                    tx1.sig1,
-                    tx1.sig2,
-                    tx1.confirmSig(utils.toBuffer(root), owenerKey),
+                    sig1,
+                    utils.zeros(65)
                 ])
             );
 
@@ -210,7 +213,7 @@ contract("RootChain", ([owner, nonOwner]) => {
             const depositBlknum = await rootChain.getDepositBlock();
             await rootChain.deposit({ value: depositAmount, from: owner });
 
-            const tx2 = new Transaction([
+            const tx2 = [
                 utils.toBuffer(Number(depositBlknum)), // blkbum1
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
@@ -226,7 +229,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
                 utils.zeros(20), // newowner2
                 utils.toBuffer(0), // amount2           
-            ]);
+            ];
 
             // RLP encoded tx2 because of RLP Decoder in vyper
             const encodedTx2 = "0xf84e01000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
@@ -279,7 +282,7 @@ contract("RootChain", ([owner, nonOwner]) => {
             const depositBlknum2 = await rootChain.getDepositBlock();
             await rootChain.deposit({ value: depositAmount, from: nonOwner });
 
-            const tx3 = new Transaction([
+            const tx3 = [
                 utils.toBuffer(Number(depositBlknum)), // blkbum1
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
@@ -295,7 +298,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
                 utils.zeros(20), // newowner2
                 utils.toBuffer(0), // amount2           
-            ]);
+            ];
 
             // RLP encoded tx3 because of RLP Decoder in vyper
             const encodedTx3 = "0xf84e01000002000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
@@ -353,7 +356,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
     describe("challengeExit", () => {
         it("can challenge exit", async () => {
-            const tx1 = new Transaction([
+            const tx1 = [
                 utils.toBuffer(0), // blkbum1
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
@@ -369,7 +372,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
                 utils.zeros(20), // newowner2
                 utils.toBuffer(0) // amount2   
-            ]);
+            ];
 
             const encodedTx1 = "0xf84e00000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
 
@@ -405,9 +408,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
             await rootChain.startDepositExit(utxoPos1, ZERO_ADDRESS, Number(depositAmount));
 
-
-
-            const tx3 = new Transaction([
+            const tx3 = [
                 utils.toBuffer(utxoPos2), // blkbum1                
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
@@ -423,7 +424,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
                 utils.zeros(20), // newowner2
                 utils.toBuffer(0) // amount2           
-            ]);
+            ];
 
             const encodedTx3 = "0xf8528477359400000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
 
@@ -455,7 +456,7 @@ contract("RootChain", ([owner, nonOwner]) => {
             const utxoPos3 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
 
 
-            const tx4 = new Transaction([
+            const tx4 = [
                 utils.toBuffer(utxoPos1), // blkbum1                
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
@@ -471,7 +472,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
                 utils.zeros(20), // newowner2
                 utils.toBuffer(0) // amount2           
-            ]);
+            ];
 
             const encodedTx4 = "0xf852843b9aca01000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
 
