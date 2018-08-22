@@ -385,22 +385,12 @@ contract("RootChain", ([owner, nonOwner]) => {
             let merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx1)), utils.zeros(65), utils.zeros(65)]));
 
             let tree = new FixedMerkleTree(16, [merkleHash]);
-            let proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             let [root, _] = await rootChain.getChildChain(Number(this.utxoPos1));
 
             let confVrs = utils.ecsign(
                 utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx1)), utils.toBuffer(root)])),
                 owenerKey
-            );
-            let confirmSig = utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s));
-
-            let sigs = utils.bufferToHex(
-                Buffer.concat([
-                    utils.zeros(65),
-                    utils.zeros(65),
-                    confirmSig
-                ])
             );
 
             await rootChain.startDepositExit(this.utxoPos1, ZERO_ADDRESS, Number(depositAmount));
@@ -431,7 +421,6 @@ contract("RootChain", ([owner, nonOwner]) => {
             merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(this.encodedTx3)), sig1, utils.zeros(65)]));
 
             tree = new FixedMerkleTree(16, [merkleHash]);
-            proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             let childBlknum = await rootChain.getCurrentChildBlock();
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
@@ -442,14 +431,7 @@ contract("RootChain", ([owner, nonOwner]) => {
                 utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(this.encodedTx3)), utils.toBuffer(root)])),
                 owenerKey
             );
-            confirmSig = utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s));
 
-            sigs = utils.bufferToHex(
-                Buffer.concat([
-                    sig1,
-                    utils.zeros(65)
-                ])
-            );
             this.utxoPos3 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
 
 
