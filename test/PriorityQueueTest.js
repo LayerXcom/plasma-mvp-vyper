@@ -1,14 +1,9 @@
 let assert = require('chai').assert;
 
-let RootChain = artifacts.require("root_chain");
 let PriorityQueue = artifacts.require("priority_queue");
 
 let {
-    catchError,
-    toHex,
-    fastForward,
-    proofForDepositBlock,
-    zeroHashes
+    catchError
 } = require('./helpers/priorityQueueUtilities');
 
 contract('PriorityQueue', async (accounts) => {
@@ -16,7 +11,6 @@ contract('PriorityQueue', async (accounts) => {
     beforeEach(async () => {
         instance = await PriorityQueue.new();
         await instance.setup();
-        // rootChain = await RootChain.new(instance.address);
     });
 
     it("Add then remove", async () => {

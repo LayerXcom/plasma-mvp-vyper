@@ -4,7 +4,6 @@ const { increaseTime, duration } = require('./helpers/increaseTime');
 const { EVMRevert } = require('./helpers/EVMRevert');
 const { expectThrow } = require('./helpers/expectThrow');
 const FixedMerkleTree = require('./helpers/fixedMerkleTree');
-const Transaction = require('./helpers/transaction');
 const { keys } = require('./helpers/keys');
 const { getTransactionGasCost } = require('./helpers/getGasCost');
 
@@ -37,10 +36,8 @@ contract("RootChain", ([owner, nonOwner]) => {
     // See: https://github.com/ethereum/vyper/blob/master/vyper/utils.py#L125
     const RLP_DECODER_ADDRESS = '0x5185D17c44699cecC3133114F8df70753b856709';
 
-    // web3.eth.sendTransaction({ from: owner, to: "0xd2c560282c9C02465C2dAcdEF3E859E730848761", value: 6270960000000000 });
     web3.eth.sendTransaction({ from: owner, to: "0x39ba083c30fCe59883775Fc729bBE1f9dE4DEe11", value: 10 ** 17 });
 
-    // web3.eth.sendRawTransaction("0xf90237808506fc23ac00830330888080b902246102128061000e60003961022056600060007f010000000000000000000000000000000000000000000000000000000000000060003504600060c082121515585760f882121561004d5760bf820336141558576001905061006e565b600181013560f783036020035260005160f6830301361415585760f6820390505b5b368112156101c2577f010000000000000000000000000000000000000000000000000000000000000081350483602086026040015260018501945060808112156100d55760018461044001526001828561046001376001820191506021840193506101bc565b60b881121561014357608081038461044001526080810360018301856104600137608181141561012e5760807f010000000000000000000000000000000000000000000000000000000000000060018401350412151558575b607f81038201915060608103840193506101bb565b60c08112156101b857600182013560b782036020035260005160388112157f010000000000000000000000000000000000000000000000000000000000000060018501350402155857808561044001528060b6838501038661046001378060b6830301830192506020810185019450506101ba565bfe5b5b5b5061006f565b601f841315155857602060208502016020810391505b6000821215156101fc578082604001510182826104400301526020820391506101d8565b808401610420528381018161044003f350505050505b6000f31b2d4f");
     const txHash = web3.eth.sendRawTransaction(rawTx);
     const receipt = web3.eth.getTransactionReceipt(txHash);
     const rlpDecoderAddr = utils.toChecksumAddress(receipt.contractAddress);
@@ -151,7 +148,7 @@ contract("RootChain", ([owner, nonOwner]) => {
         let expectedOwner, tokenAddr, expectedAmount;
 
         it("cannot exit twice off of the same utxo", async () => {
-            const tx1 = new Transaction([
+            const tx1 = [
                 utils.toBuffer(0), // blkbum1
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
@@ -167,7 +164,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
                 utils.zeros(20), // newowner2
                 utils.toBuffer(0) // amount2   
-            ]);
+            ];
 
             // RLP encoded tx1            
             const encodedTx1 = "0xf84e00000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
@@ -177,16 +174,19 @@ contract("RootChain", ([owner, nonOwner]) => {
 
             await rootChain.deposit({ value: depositAmount, from: owner });
 
-            const merkleHash = tx1.merkleHash();
+            const vrs = utils.ecsign(utils.sha3(encodedTx1), owenerKey);
+            const sig1 = utils.toBuffer(utils.toRpcSig(vrs.v, vrs.r, vrs.s));
+
+            const merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx1)), sig1, utils.zeros(65)]));
+
             const tree = new FixedMerkleTree(16, [merkleHash]);
             const proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             const [root, _] = await rootChain.getChildChain(Number(depositBlknum));
             const sigs = utils.bufferToHex(
                 Buffer.concat([
-                    tx1.sig1,
-                    tx1.sig2,
-                    tx1.confirmSig(utils.toBuffer(root), owenerKey),
+                    sig1,
+                    utils.zeros(65)
                 ])
             );
 
@@ -210,7 +210,7 @@ contract("RootChain", ([owner, nonOwner]) => {
             const depositBlknum = await rootChain.getDepositBlock();
             await rootChain.deposit({ value: depositAmount, from: owner });
 
-            const tx2 = new Transaction([
+            const tx2 = [
                 utils.toBuffer(Number(depositBlknum)), // blkbum1
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
@@ -226,7 +226,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
                 utils.zeros(20), // newowner2
                 utils.toBuffer(0), // amount2           
-            ]);
+            ];
 
             // RLP encoded tx2 because of RLP Decoder in vyper
             const encodedTx2 = "0xf84e01000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
@@ -279,7 +279,7 @@ contract("RootChain", ([owner, nonOwner]) => {
             const depositBlknum2 = await rootChain.getDepositBlock();
             await rootChain.deposit({ value: depositAmount, from: nonOwner });
 
-            const tx3 = new Transaction([
+            const tx3 = [
                 utils.toBuffer(Number(depositBlknum)), // blkbum1
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
@@ -295,7 +295,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
                 utils.zeros(20), // newowner2
                 utils.toBuffer(0), // amount2           
-            ]);
+            ];
 
             // RLP encoded tx3 because of RLP Decoder in vyper
             const encodedTx3 = "0xf84e01000002000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
@@ -352,8 +352,8 @@ contract("RootChain", ([owner, nonOwner]) => {
     });
 
     describe("challengeExit", () => {
-        it("can challenge exit", async () => {
-            const tx1 = new Transaction([
+        beforeEach(async () => {
+            const tx1 = [
                 utils.toBuffer(0), // blkbum1
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
@@ -369,45 +369,33 @@ contract("RootChain", ([owner, nonOwner]) => {
 
                 utils.zeros(20), // newowner2
                 utils.toBuffer(0) // amount2   
-            ]);
+            ];
 
             const encodedTx1 = "0xf84e00000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
 
             let depositBlknum = await rootChain.getDepositBlock();
 
-            const utxoPos1 = Number(depositBlknum) * 1000000000 + 1;  // 1
+            this.utxoPos1 = Number(depositBlknum) * 1000000000 + 1;
             await rootChain.deposit({ value: depositAmount, from: owner });
 
             depositBlknum = await rootChain.getDepositBlock();
-            const utxoPos2 = Number(depositBlknum) * 1000000000;  // 2
+            const utxoPos2 = Number(depositBlknum) * 1000000000;
             await rootChain.deposit({ value: depositAmount, from: owner });
 
             let merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx1)), utils.zeros(65), utils.zeros(65)]));
 
             let tree = new FixedMerkleTree(16, [merkleHash]);
-            let proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
-            let [root, _] = await rootChain.getChildChain(Number(utxoPos1));
+            let [root, _] = await rootChain.getChildChain(Number(this.utxoPos1));
 
             let confVrs = utils.ecsign(
                 utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx1)), utils.toBuffer(root)])),
                 owenerKey
             );
-            let confirmSig = utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s));
 
-            let sigs = utils.bufferToHex(
-                Buffer.concat([
-                    utils.zeros(65),
-                    utils.zeros(65),
-                    confirmSig
-                ])
-            );
+            await rootChain.startDepositExit(this.utxoPos1, ZERO_ADDRESS, Number(depositAmount));
 
-            await rootChain.startDepositExit(utxoPos1, ZERO_ADDRESS, Number(depositAmount));
-
-
-
-            const tx3 = new Transaction([
+            const tx3 = [
                 utils.toBuffer(utxoPos2), // blkbum1                
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
@@ -423,17 +411,16 @@ contract("RootChain", ([owner, nonOwner]) => {
 
                 utils.zeros(20), // newowner2
                 utils.toBuffer(0) // amount2           
-            ]);
+            ];
 
-            const encodedTx3 = "0xf8528477359400000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
+            this.encodedTx3 = "0xf8528477359400000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
 
-            let vrs1 = utils.ecsign(utils.sha3(encodedTx3), owenerKey);
+            let vrs1 = utils.ecsign(utils.sha3(this.encodedTx3), owenerKey);
             let sig1 = utils.toBuffer(utils.toRpcSig(vrs1.v, vrs1.r, vrs1.s));
 
-            merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), sig1, utils.zeros(65)]));
+            merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(this.encodedTx3)), sig1, utils.zeros(65)]));
 
             tree = new FixedMerkleTree(16, [merkleHash]);
-            proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             let childBlknum = await rootChain.getCurrentChildBlock();
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
@@ -441,22 +428,15 @@ contract("RootChain", ([owner, nonOwner]) => {
             [root, _] = await rootChain.getChildChain(Number(childBlknum));
 
             confVrs = utils.ecsign(
-                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx3)), utils.toBuffer(root)])),
+                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(this.encodedTx3)), utils.toBuffer(root)])),
                 owenerKey
             );
-            confirmSig = utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s));
 
-            sigs = utils.bufferToHex(
-                Buffer.concat([
-                    sig1,
-                    utils.zeros(65)
-                ])
-            );
-            const utxoPos3 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
+            this.utxoPos3 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
 
 
-            const tx4 = new Transaction([
-                utils.toBuffer(utxoPos1), // blkbum1                
+            const tx4 = [
+                utils.toBuffer(this.utxoPos1), // blkbum1                
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
 
@@ -471,16 +451,16 @@ contract("RootChain", ([owner, nonOwner]) => {
 
                 utils.zeros(20), // newowner2
                 utils.toBuffer(0) // amount2           
-            ]);
+            ];
 
-            const encodedTx4 = "0xf852843b9aca01000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
+            this.encodedTx4 = "0xf852843b9aca01000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
 
-            vrs1 = utils.ecsign(utils.sha3(encodedTx4), owenerKey);
+            vrs1 = utils.ecsign(utils.sha3(this.encodedTx4), owenerKey);
             sig1 = utils.toBuffer(utils.toRpcSig(vrs1.v, vrs1.r, vrs1.s));
 
-            merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx4)), sig1, utils.zeros(65)]));
+            merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(this.encodedTx4)), sig1, utils.zeros(65)]));
             tree = new FixedMerkleTree(16, [merkleHash]);
-            proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
+            this.proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
             childBlknum = await rootChain.getCurrentChildBlock();
             await rootChain.submitBlock(utils.bufferToHex(tree.getRoot()));
@@ -488,53 +468,61 @@ contract("RootChain", ([owner, nonOwner]) => {
             [root, _] = await rootChain.getChildChain(Number(childBlknum));
 
             confVrs = utils.ecsign(
-                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx4)), utils.toBuffer(root)])),
+                utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(this.encodedTx4)), utils.toBuffer(root)])),
                 owenerKey
             );
-            confirmSig = utils.bufferToHex(utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s)));
+            this.confirmSig = utils.bufferToHex(utils.toBuffer(utils.toRpcSig(confVrs.v, confVrs.r, confVrs.s)));
 
-            sigs = utils.bufferToHex(
+            this.sigs = utils.bufferToHex(
                 Buffer.concat([
                     sig1,
                     utils.zeros(65)
                 ])
             );
 
-            const utxoPos4 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
-            const oindex1 = 0;
+            this.utxoPos4 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
+            this.oindex1 = 0;
+        })
 
-            // should fails if transaction after exit doesn't reference the utxo being exited
-            await expectThrow(rootChain.challengeExit(utxoPos3, oindex1, encodedTx3, proof, sigs, confirmSig), EVMRevert);
-
-            const reverseProof = proof
-                .slice(2)
-                .split('')
-                .reverse()
-                .join('');
-            // should fails if transaction proof is incorrect
-            await expectThrow(rootChain.challengeExit(utxoPos4, oindex1, encodedTx4, reverseProof, sigs, confirmSig), EVMRevert);
-
-            const reverseConfirmSig = confirmSig
-                .slice(2)
-                .split('')
-                .reverse()
-                .join('');
-            // should fails if transaction confirmation is incorrect
-            await expectThrow(rootChain.challengeExit(utxoPos4, oindex1, encodedTx4, proof, sigs, reverseConfirmSig), EVMRevert);
-
-            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
+        it("can challenge exit", async () => {
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(this.utxoPos1);
             expectedOwner.should.equal(owner);
             tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
 
-            await rootChain.challengeExit(utxoPos4, oindex1, encodedTx4, proof, sigs, confirmSig);
+            await rootChain.challengeExit(this.utxoPos4, this.oindex1, this.encodedTx4, this.proof, this.sigs, this.confirmSig);
 
-            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(this.utxoPos1);
             expectedOwner.should.equal(ZERO_ADDRESS);
             tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
         });
+
+        it("should fails if transaction after exit doesn't reference the utxo being exited", async () => {
+            await expectThrow(rootChain.challengeExit(this.utxoPos3, this.oindex1, this.encodedTx3, this.proof, this.sigs, this.confirmSig), EVMRevert);
+        });
+
+        it("should fails if transaction proof is incorrect", async () => {
+            const reverseProof = this.proof
+                .slice(2)
+                .split('')
+                .reverse()
+                .join('');
+
+            await expectThrow(rootChain.challengeExit(this.utxoPos4, this.oindex1, this.encodedTx4, reverseProof, this.sigs, this.confirmSig), EVMRevert);
+        });
+
+        it("should fails if transaction confirmation is incorrect", async () => {
+            const reverseConfirmSig = this.confirmSig
+                .slice(2)
+                .split('')
+                .reverse()
+                .join('');
+
+            await expectThrow(rootChain.challengeExit(this.utxoPos4, this.oindex1, this.encodedTx4, this.proof, this.sigs, reverseConfirmSig), EVMRevert);
+        });
     });
+
 
     describe("finalizeExits", () => {
         it("can start exits and finalize exits", async () => {
