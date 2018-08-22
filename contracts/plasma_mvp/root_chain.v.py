@@ -121,6 +121,7 @@ def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof:
 #
 
 # @dev Queries the child chain.
+#
 @public
 @constant
 def getChildChain(_blockNumber: uint256) -> (bytes32, uint256):
