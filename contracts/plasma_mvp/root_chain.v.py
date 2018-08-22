@@ -36,6 +36,7 @@ currentFeeExit: uint256
 @private
 @constant
 def createExitingTx(_exitingTxBytes: bytes[1024], _oIndex: uint256) -> (address, address, uint256, uint256):    
+    assert(_oIndex == 0 or _oIndex == 1)
     # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, token, newowner1, amount1, newowner2, amount2]    
     txList = RLPList(_exitingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256])
     if _oIndex == 0:
@@ -47,6 +48,7 @@ def createExitingTx(_exitingTxBytes: bytes[1024], _oIndex: uint256) -> (address,
 @private
 @constant
 def getUtxoPos(_challengingTxBytes: bytes[1024], _oIndex: uint256) -> uint256:
+    assert(_oIndex == 0 or _oIndex == 1)
     # TxField: [blkbum1, txindex1, oindex1, blknum2, txindex2, oindex2, cur12, newowner1, amount1, newowner2, amount2]
     txList = RLPList(_challengingTxBytes, [uint256, uint256, uint256, uint256, uint256, uint256, address, address, uint256, address, uint256])
     if _oIndex == 0:
