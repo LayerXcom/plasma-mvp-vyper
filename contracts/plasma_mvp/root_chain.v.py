@@ -121,7 +121,8 @@ def checkMembership(_leaf: bytes32, _index: uint256, _rootHash: bytes32, _proof:
 #
 
 # @dev Queries the child chain.
-#
+# @param _blockNumber Number of the block to return.
+# @return Child chain block at the specified block number.
 @public
 @constant
 def getChildChain(_blockNumber: uint256) -> (bytes32, uint256):
@@ -136,6 +137,8 @@ def getDepositBlock() -> uint256:
     return self.currentChildBlock - 1000 + self.currentDepositBlock
 
 # @dev Returns information about an exit.
+# @param _utxoPos Position of the UTXO in the chain.
+# @return A tuple representing the active exit for the given UTXO.
 @public
 @constant
 def getExit(_utxoPos: uint256) -> (address, address, uint256):
@@ -313,6 +316,7 @@ def startExit(_utxoPos: uint256, _txBytes: bytes[1024], _proof: bytes[512], _sig
 
     self.addExitToQueue(_utxoPos, exitor, token, amount, self.childChain[blknum].blockTimestamp)
 
+
 # @dev Allows anyone to challenge an exiting transaction by submitting proof of a double spend on the child chain.
 # @param _cUtxoPos The position of the challenging utxo.
 # @param _eUtxoIndex The output position of the exiting utxo.
@@ -347,6 +351,7 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024
 
 
 # @dev Processes any exits that have completed the challenge period.
+# @param _token Token type to process.
 @public
 def finalizeExits(_token: address):   
     utxoPos: uint256
