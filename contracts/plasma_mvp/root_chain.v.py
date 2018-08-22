@@ -341,7 +341,7 @@ def challengeExit(_cUtxoPos: uint256, _eUtxoIndex: uint256, _txBytes: bytes[1024
     # Check the merkle proof of the transaction used to challenge
     assert self.checkMembership(merkleHash, txindex, root, _proof)
 
-    # Delete the owner but keep the amount to prevent another exit
+    # # Delete the owner but keep the amount to prevent another exit
     self.exits[eUtxoPos].owner = ZERO_ADDRESS
 
 
