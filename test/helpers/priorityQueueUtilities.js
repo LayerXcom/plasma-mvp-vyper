@@ -1,4 +1,3 @@
-let RLP = require('rlp');
 
 /*
  How to avoid using try/catch blocks with promises' that could fail using async/await

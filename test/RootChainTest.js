@@ -4,7 +4,6 @@ const { increaseTime, duration } = require('./helpers/increaseTime');
 const { EVMRevert } = require('./helpers/EVMRevert');
 const { expectThrow } = require('./helpers/expectThrow');
 const FixedMerkleTree = require('./helpers/fixedMerkleTree');
-const Transaction = require('./helpers/transaction');
 const { keys } = require('./helpers/keys');
 const { getTransactionGasCost } = require('./helpers/getGasCost');
 
@@ -37,10 +36,8 @@ contract("RootChain", ([owner, nonOwner]) => {
     // See: https://github.com/ethereum/vyper/blob/master/vyper/utils.py#L125
     const RLP_DECODER_ADDRESS = '0x5185D17c44699cecC3133114F8df70753b856709';
 
-    // web3.eth.sendTransaction({ from: owner, to: "0xd2c560282c9C02465C2dAcdEF3E859E730848761", value: 6270960000000000 });
     web3.eth.sendTransaction({ from: owner, to: "0x39ba083c30fCe59883775Fc729bBE1f9dE4DEe11", value: 10 ** 17 });
 
-    // web3.eth.sendRawTransaction("0xf90237808506fc23ac00830330888080b902246102128061000e60003961022056600060007f010000000000000000000000000000000000000000000000000000000000000060003504600060c082121515585760f882121561004d5760bf820336141558576001905061006e565b600181013560f783036020035260005160f6830301361415585760f6820390505b5b368112156101c2577f010000000000000000000000000000000000000000000000000000000000000081350483602086026040015260018501945060808112156100d55760018461044001526001828561046001376001820191506021840193506101bc565b60b881121561014357608081038461044001526080810360018301856104600137608181141561012e5760807f010000000000000000000000000000000000000000000000000000000000000060018401350412151558575b607f81038201915060608103840193506101bb565b60c08112156101b857600182013560b782036020035260005160388112157f010000000000000000000000000000000000000000000000000000000000000060018501350402155857808561044001528060b6838501038661046001378060b6830301830192506020810185019450506101ba565bfe5b5b5b5061006f565b601f841315155857602060208502016020810391505b6000821215156101fc578082604001510182826104400301526020820391506101d8565b808401610420528381018161044003f350505050505b6000f31b2d4f");
     const txHash = web3.eth.sendRawTransaction(rawTx);
     const receipt = web3.eth.getTransactionReceipt(txHash);
     const rlpDecoderAddr = utils.toChecksumAddress(receipt.contractAddress);
@@ -151,23 +148,23 @@ contract("RootChain", ([owner, nonOwner]) => {
         let expectedOwner, tokenAddr, expectedAmount;
 
         it("cannot exit twice off of the same utxo", async () => {
-            // const tx1 = [
-            //     utils.toBuffer(0), // blkbum1
-            //     utils.toBuffer(0), // txindex1
-            //     utils.toBuffer(0), // oindex1
+            const tx1 = [
+                utils.toBuffer(0), // blkbum1
+                utils.toBuffer(0), // txindex1
+                utils.toBuffer(0), // oindex1
 
-            //     utils.toBuffer(0), // blknum2
-            //     utils.toBuffer(0), // txindex2
-            //     utils.toBuffer(0), // oindex2
+                utils.toBuffer(0), // blknum2
+                utils.toBuffer(0), // txindex2
+                utils.toBuffer(0), // oindex2
 
-            //     utils.zeros(20), // token address
+                utils.zeros(20), // token address
 
-            //     utils.toBuffer(owner), // newowner1
-            //     utils.toBuffer(depositAmountNum), // amount1
+                utils.toBuffer(owner), // newowner1
+                utils.toBuffer(depositAmountNum), // amount1
 
-            //     utils.zeros(20), // newowner2
-            //     utils.toBuffer(0) // amount2   
-            // ];
+                utils.zeros(20), // newowner2
+                utils.toBuffer(0) // amount2   
+            ];
 
             // RLP encoded tx1            
             const encodedTx1 = "0xf84e00000000000094000000000000000000000000000000000000000094627306090abab3a6e1400e9345bc60c78a8bef57872386f26fc1000094000000000000000000000000000000000000000000";
