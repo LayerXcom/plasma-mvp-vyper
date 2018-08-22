@@ -352,7 +352,7 @@ contract("RootChain", ([owner, nonOwner]) => {
     });
 
     describe("challengeExit", () => {
-        it("can challenge exit", async () => {
+        beforeEach(async () => {
             const tx1 = [
                 utils.toBuffer(0), // blkbum1
                 utils.toBuffer(0), // txindex1
@@ -375,11 +375,11 @@ contract("RootChain", ([owner, nonOwner]) => {
 
             let depositBlknum = await rootChain.getDepositBlock();
 
-            const utxoPos1 = Number(depositBlknum) * 1000000000 + 1;  // 1
+            this.utxoPos1 = Number(depositBlknum) * 1000000000 + 1;
             await rootChain.deposit({ value: depositAmount, from: owner });
 
             depositBlknum = await rootChain.getDepositBlock();
-            const utxoPos2 = Number(depositBlknum) * 1000000000;  // 2
+            const utxoPos2 = Number(depositBlknum) * 1000000000;
             await rootChain.deposit({ value: depositAmount, from: owner });
 
             let merkleHash = utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx1)), utils.zeros(65), utils.zeros(65)]));
@@ -387,7 +387,7 @@ contract("RootChain", ([owner, nonOwner]) => {
             let tree = new FixedMerkleTree(16, [merkleHash]);
             let proof = utils.bufferToHex(Buffer.concat(tree.getPlasmaProof(merkleHash)));
 
-            let [root, _] = await rootChain.getChildChain(Number(utxoPos1));
+            let [root, _] = await rootChain.getChildChain(Number(this.utxoPos1));
 
             let confVrs = utils.ecsign(
                 utils.sha3(Buffer.concat([utils.toBuffer(utils.sha3(encodedTx1)), utils.toBuffer(root)])),
@@ -403,7 +403,7 @@ contract("RootChain", ([owner, nonOwner]) => {
                 ])
             );
 
-            await rootChain.startDepositExit(utxoPos1, ZERO_ADDRESS, Number(depositAmount));
+            await rootChain.startDepositExit(this.utxoPos1, ZERO_ADDRESS, Number(depositAmount));
 
             const tx3 = [
                 utils.toBuffer(utxoPos2), // blkbum1                
@@ -454,7 +454,7 @@ contract("RootChain", ([owner, nonOwner]) => {
 
 
             const tx4 = [
-                utils.toBuffer(utxoPos1), // blkbum1                
+                utils.toBuffer(this.utxoPos1), // blkbum1                
                 utils.toBuffer(0), // txindex1
                 utils.toBuffer(0), // oindex1
 
@@ -500,32 +500,17 @@ contract("RootChain", ([owner, nonOwner]) => {
 
             this.utxoPos4 = Number(childBlknum) * 1000000000 + 10000 * 0 + 0;
             this.oindex1 = 0;
+        })
 
-
-            const reverseProof = this.proof
-                .slice(2)
-                .split('')
-                .reverse()
-                .join('');
-            // 
-            await expectThrow(rootChain.challengeExit(this.utxoPos4, this.oindex1, this.encodedTx4, reverseProof, this.sigs, this.confirmSig), EVMRevert);
-
-            const reverseConfirmSig = this.confirmSig
-                .slice(2)
-                .split('')
-                .reverse()
-                .join('');
-            // should fails if transaction confirmation is incorrect
-            await expectThrow(rootChain.challengeExit(this.utxoPos4, this.oindex1, this.encodedTx4, this.proof, this.sigs, reverseConfirmSig), EVMRevert);
-
-            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
+        it("can challenge exit", async () => {
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(this.utxoPos1);
             expectedOwner.should.equal(owner);
             tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
 
             await rootChain.challengeExit(this.utxoPos4, this.oindex1, this.encodedTx4, this.proof, this.sigs, this.confirmSig);
 
-            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(utxoPos1);
+            [expectedOwner, tokenAddr, expectedAmount] = await rootChain.getExit(this.utxoPos1);
             expectedOwner.should.equal(ZERO_ADDRESS);
             tokenAddr.should.equal(ZERO_ADDRESS);
             expectedAmount.should.be.bignumber.equal(depositAmount);
@@ -536,13 +521,26 @@ contract("RootChain", ([owner, nonOwner]) => {
         });
 
         it("should fails if transaction proof is incorrect", async () => {
+            const reverseProof = this.proof
+                .slice(2)
+                .split('')
+                .reverse()
+                .join('');
 
+            await expectThrow(rootChain.challengeExit(this.utxoPos4, this.oindex1, this.encodedTx4, reverseProof, this.sigs, this.confirmSig), EVMRevert);
         });
 
-        it("", async () => {
+        it("should fails if transaction confirmation is incorrect", async () => {
+            const reverseConfirmSig = this.confirmSig
+                .slice(2)
+                .split('')
+                .reverse()
+                .join('');
 
+            await expectThrow(rootChain.challengeExit(this.utxoPos4, this.oindex1, this.encodedTx4, this.proof, this.sigs, reverseConfirmSig), EVMRevert);
         });
     });
+
 
     describe("finalizeExits", () => {
         it("can start exits and finalize exits", async () => {
