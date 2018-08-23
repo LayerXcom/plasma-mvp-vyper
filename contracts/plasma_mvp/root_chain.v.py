@@ -365,7 +365,7 @@ def finalizeExits(_token: address):
         token: address,
         amount: uint256
     } = self.exits[utxoPos]
-    for i in range(10000): # TODO: Right way? In addition, range() does not accept variable?
+    for i in range(32768): # 32768 = 2 ** 15, max size of priority queue is 2^15 - 1
         if not exitable_at < as_unitless_number(block.timestamp):
             break
         currentExit = self.exits[utxoPos]
