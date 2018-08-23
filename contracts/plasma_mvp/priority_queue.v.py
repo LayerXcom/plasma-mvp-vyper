@@ -54,7 +54,7 @@ def percDown(_i: uint256):
 @public
 def insert(_k: uint256) -> bool:
     assert msg.sender == self.owner
-    assert self.currentSize < 2 ** 30 # max size of priority queue is 2^15 - 1
+    assert self.currentSize < 2 ** 30 # max size of priority queue is 2^30 - 1
     self.currentSize += 1
     self.heapList[self.currentSize] = _k
     self.percUp(self.currentSize)
