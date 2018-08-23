@@ -365,7 +365,7 @@ def finalizeExits(_token: address):
         token: address,
         amount: uint256
     } = self.exits[utxoPos]
-    for i in range(32768): # 32768 = 2 ** 15, max size of priority queue is 2^15 - 1
+    for i in range(1073741824): # 1073741824 is 2^30, max size of priority queue is 2^30 - 1
         if not exitable_at < as_unitless_number(block.timestamp):
             break
         currentExit = self.exits[utxoPos]
