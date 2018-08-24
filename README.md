@@ -1,5 +1,5 @@
 # Plasma MVP Implementation in Vyper
-This is an experimental implementation of [Minimal Viable Plasma](Minimum Viable Plasma) in Vyper.
+This is an experimental implementation of [Minimal Viable Plasma](https://ethresear.ch/t/minimal-viable-plasma/426) in Vyper.
 In [our blog post](https://medium.com/@ryuyanakamura/plasma-mvp-implementation-in-vyper-5a3850e5b1b) we explained the motivation and experience of this project.
 
 ## Contributing
