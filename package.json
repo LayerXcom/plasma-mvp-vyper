@@ -1,0 +1,31 @@
+{
+  "name": "plasma-mvp-vyper",
+  "version": "0.0.1",
+  "description": "Vyper implementation of Plasma MVP",
+  "scripts": {
+    "build:sol": "truffle compile",
+    "build:vyper": "truper",
+    "rename-vyper-artifacts": "for F in build/contracts/*; do mv $F ${F/.vyper/};done",
+    "build": "npm run build:sol && npm run build:vyper && npm run rename-vyper-artifacts",
+    "console": "truffle console",
+    "migrate": "truffle migrate",
+    "networks": "truffle networks",
+    "test": "truffle test",
+    "develop": "truffle develop"
+  },
+  "repository": "https://github.com/LayerXcom/plasma-mvp-vyper.git",
+  "author": "Osuke Sudo <osuke.sudo@layerx.co.jp>, Ryuya Nakamura <ryuya.nakamura@layerx.co.jp>",
+  "license": "MIT",
+  "dependencies": {
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "chai-bignumber": "^2.0.2",
+    "ethereumjs-util": "^5.2.0",
+    "pify": "^4.0.0",
+    "safe-buffer": "^5.1.2",
+    "truffle": "^4.1.13",
+    "truffle-hdwallet-provider": "^0.0.6",
+    "truper": "^0.0.2",
+    "web3-utils": "^1.0.0-beta.35"
+  }
+}
