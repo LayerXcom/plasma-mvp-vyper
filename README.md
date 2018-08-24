@@ -19,4 +19,4 @@ Build process is handled by [truper](https://www.npmjs.com/package/truper) and i
 
 ## Acknowledgements
 The `root_chain` and `priority_queue` contracts are based on [OmiseGo's MVP implementation](https://github.com/omisego/plasma-mvp). 
-We want to thank them for their work!
+We really appreciate them for their work!
