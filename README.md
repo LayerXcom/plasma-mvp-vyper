@@ -1,5 +1,5 @@
 # Plasma MVP Implementation in Vyper
-This is an experimental implementation of [Minimal Viable Plasma](Minimum Viable Plasma) in Vyper.
+This is an experimental implementation of [Minimal Viable Plasma](https://ethresear.ch/t/minimal-viable-plasma/426) in Vyper.
 In [our blog post](https://medium.com/@ryuyanakamura/plasma-mvp-implementation-in-vyper-5a3850e5b1b) we explained the motivation and experience of this project.
 
 ## Contributing
@@ -18,5 +18,5 @@ This execute Truffle's tests. Tests are found in `tests/` directory.
 Build process is handled by [truper](https://www.npmjs.com/package/truper) and it creates truffle compatible artifacts in `build/contracts` directory.
 
 ## Acknowledgements
-The `root_chain` and `priority_queue` contracts are based on [OmiseGo's MVP implementation](https://github.com/omisego/plasma-mvp). 
+`root_chain` and `priority_queue` contracts are based on [OmiseGo's MVP implementation](https://github.com/omisego/plasma-mvp). 
 We really appreciate them for their work!
